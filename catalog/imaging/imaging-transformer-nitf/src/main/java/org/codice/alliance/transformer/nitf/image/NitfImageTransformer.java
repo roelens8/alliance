@@ -23,6 +23,7 @@ import org.codice.alliance.transformer.nitf.common.SegmentHandler;
 import org.codice.imaging.nitf.core.image.ImageCoordinates;
 import org.codice.imaging.nitf.core.image.ImageCoordinatesRepresentation;
 import org.codice.imaging.nitf.core.image.ImageSegment;
+
 import org.codice.imaging.nitf.fluent.NitfSegmentsFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,6 @@ import com.vividsolutions.jts.geom.PrecisionModel;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.impl.AttributeImpl;
 import ddf.catalog.data.types.Core;
-import ddf.catalog.transform.CatalogTransformerException;
 
 /**
  * Converts NITF images into a Metacard.
@@ -52,7 +52,7 @@ public class NitfImageTransformer extends SegmentHandler {
     private static final String IMAGE_DATATYPE = "Image";
 
     public Metacard transform(NitfSegmentsFlow nitfSegmentsFlow, Metacard metacard)
-            throws IOException, CatalogTransformerException {
+            throws IOException {
 
         validateArgument(nitfSegmentsFlow, "nitfSegmentsFlow");
         validateArgument(metacard, "metacard");
@@ -63,8 +63,7 @@ public class NitfImageTransformer extends SegmentHandler {
         return metacard;
     }
 
-    private void handleSegments(NitfSegmentsFlow nitfSegmentsFlow, Metacard metacard)
-            throws CatalogTransformerException {
+    private void handleSegments(NitfSegmentsFlow nitfSegmentsFlow, Metacard metacard) {
         validateArgument(nitfSegmentsFlow, "nitfSegmentsFlow");
         validateArgument(metacard, "metacard");
 
@@ -108,6 +107,7 @@ public class NitfImageTransformer extends SegmentHandler {
         handleGeometry(metacard, imagesegmentHeader, polygons);
         handleMissionIdentifier(metacard, imagesegmentHeader.getImageIdentifier2());
         handleComments(metacard, imagesegmentHeader.getImageComments());
+        handleTres(metacard, imagesegmentHeader);
     }
 
     protected void handleGeometry(Metacard metacard, ImageSegment imageSegmentHeader,
