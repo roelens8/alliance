@@ -23,6 +23,7 @@ import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
 import org.codice.alliance.catalog.core.api.types.Isr;
 import org.codice.alliance.transformer.nitf.ExtNitfUtility;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
+import org.codice.alliance.transformer.nitf.common.TreUtility;
 import org.codice.imaging.nitf.core.tre.Tre;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,7 @@ public enum MtirpbAttribute implements NitfAttribute<Tre> {
 
     NUMBER_OF_VALID_TARGETS(Isr.TARGET_REPORT_COUNT,
             "NO_VALID_TARGETS",
-            tre -> GmtiTreUtility.getTreValue(tre, "NO_VALID_TARGETS"),
+            tre -> TreUtility.getTreValue(tre, "NO_VALID_TARGETS"),
             new IsrAttributes().getAttributeDescriptor(Isr.TARGET_REPORT_COUNT),
             "numberOfValidTargets"),
 
@@ -50,36 +51,36 @@ public enum MtirpbAttribute implements NitfAttribute<Tre> {
 
     AIRCRAFT_LOCATION("aircraftLocation",
             "ACFT_LOC",
-            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_LOC")),
+            tre -> TreUtility.getTreValue(tre, "ACFT_LOC")),
     AIRCRAFT_ALTITUDE("aircraftAltitude",
             "ACFT_ALT",
-            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_ALT")),
+            tre -> TreUtility.getTreValue(tre, "ACFT_ALT")),
     AIRCRAFT_ALTITUDE_UNITS("aircraftAltitudeUnitOfMeasure",
             "ACFT_ALT_UNIT",
-            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_ALT_UNIT")),
+            tre -> TreUtility.getTreValue(tre, "ACFT_ALT_UNIT")),
     AIRCRAFT_HEADING("aircraftHeading",
             "ACFT_HEADING",
-            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_HEADING")),
+            tre -> TreUtility.getTreValue(tre, "ACFT_HEADING")),
     COSINE_OF_GRAZE_ANGLE("cosineOfGrazeAngle",
             "COSGRZ",
-            tre -> GmtiTreUtility.getTreValue(tre, "COSGRZ")),
+            tre -> TreUtility.getTreValue(tre, "COSGRZ")),
     DESTINATION_POINT("destinationPoint",
             "MTI_DP",
-            tre -> GmtiTreUtility.getTreValue(tre, "MTI_DP")),
-    MTI_LR("mtiLeftOrRight", "MTI_LR", tre -> GmtiTreUtility.getTreValue(tre, "MTI_LR")),
-    PATCH_NUMBER("patchNumber", "PATCH_NO", tre -> GmtiTreUtility.getTreValue(tre, "PATCH_NO")),
+            tre -> TreUtility.getTreValue(tre, "MTI_DP")),
+    MTI_LR("mtiLeftOrRight", "MTI_LR", tre -> TreUtility.getTreValue(tre, "MTI_LR")),
+    PATCH_NUMBER("patchNumber", "PATCH_NO", tre -> TreUtility.getTreValue(tre, "PATCH_NO")),
     SCAN_DATE_AND_TIME("scanDateAndTime",
             "DATIME",
-            tre -> GmtiTreUtility.getTreValue(tre, "DATIME")),
+            tre -> TreUtility.getTreValue(tre, "DATIME")),
     SQUINT_ANGLE("squintAngle",
             "SQUINT_ANGLE",
-            tre -> GmtiTreUtility.getTreValue(tre, "SQUINT_ANGLE")),
+            tre -> TreUtility.getTreValue(tre, "SQUINT_ANGLE")),
     WIDE_AREA_MTI_FRAME_NUMBER("wideAreaMtiFrameNumber",
             "WAMTI_FRAME_NO",
-            tre -> GmtiTreUtility.getTreValue(tre, "WAMTI_FRAME_NO")),
+            tre -> TreUtility.getTreValue(tre, "WAMTI_FRAME_NO")),
     WIDE_AREA_MTI_BAR_NUMBER("wideAreaMtiBarNumber",
             "WAMTI_BAR_NO",
-            tre -> GmtiTreUtility.getTreValue(tre, "WAMTI_BAR_NO"));
+            tre -> TreUtility.getTreValue(tre, "WAMTI_BAR_NO"));
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MtirpbAttribute.class);
 

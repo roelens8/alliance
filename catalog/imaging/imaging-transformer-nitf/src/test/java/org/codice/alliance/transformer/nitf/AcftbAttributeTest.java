@@ -11,33 +11,24 @@
  * is distributed along with this program and can be found at
  * <http://www.gnu.org/licenses/lgpl.html>.
  */
-package org.codice.alliance.transformer.nitf.gmti;
+package org.codice.alliance.transformer.nitf;
 
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.stream.Stream;
 
+import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
 import org.codice.imaging.nitf.core.common.NitfFormatException;
 import org.junit.Test;
 
-public class GmtiAttributesTest {
+public class AcftbAttributeTest {
 
     @Test
-    public void testImageAttributes() throws NitfFormatException {
-        Stream.of(MtirpbAttribute.values())
+    public void testAcftbAttribute() throws NitfFormatException {
+        Stream.of(AcftbAttribute.values())
                 .forEach(attribute -> assertThat(attribute.getShortName(), notNullValue()));
-
-        Stream.of(IndexedMtirpbAttribute.values())
-                .forEach(attribute -> assertThat(attribute.getShortName(), notNullValue()));
-
-        Stream.of(MtiTargetClassificationCategory.values())
-                .forEach(attribute -> assertThat(attribute.getLongName(), notNullValue()));
-
-        Stream.of(MtirpbAttribute.values())
-                .forEach(attribute -> assertThat(attribute.getLongName(), notNullValue()));
-
-        Stream.of(IndexedMtirpbAttribute.values())
+        Stream.of(AcftbAttribute.values())
                 .forEach(attribute -> assertThat(attribute.getLongName(), notNullValue()));
     }
 }

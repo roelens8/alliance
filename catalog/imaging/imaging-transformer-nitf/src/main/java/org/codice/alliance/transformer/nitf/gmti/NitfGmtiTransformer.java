@@ -40,8 +40,6 @@ import ddf.catalog.transform.CatalogTransformerException;
 
 public class NitfGmtiTransformer extends SegmentHandler {
 
-    private static final String ACFTB = "ACFTB";
-
     private static final String MTIRPB = "MTIRPB";
 
     private static final String TARGETS = "TARGETS";
@@ -80,17 +78,12 @@ public class NitfGmtiTransformer extends SegmentHandler {
         List<Tre> tres = header.getTREsRawStructure()
                 .getTREs();
 
-        tres.stream()
-                .filter(tre -> ACFTB.equals(tre.getName()
-                        .trim()))
-                .forEach(tre -> handleSegmentHeader(metacard, tre, AcftbAttribute.values()));
+        handleTres(metacard, header);
 
         tres.stream()
                 .filter(tre -> MTIRPB.equals(tre.getName()
                         .trim()))
                 .forEach(tre -> {
-                    handleSegmentHeader(metacard, tre, MtirpbAttribute.values());
-
                     try {
                         List<TreGroup> targets = tre.getEntry(TARGETS)
                                 .getGroups();
@@ -100,7 +93,8 @@ public class NitfGmtiTransformer extends SegmentHandler {
                                         group,
                                         IndexedMtirpbAttribute.values()));
                     } catch (NitfFormatException e) {
-                        LOGGER.debug("Could not parse NITF target information: ", e);
+                        LOGGER.debug("Could not parse NITF target information: {} " + e.getMessage(),
+                                e);
                     }
                 });
     }
