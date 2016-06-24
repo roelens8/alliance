@@ -20,6 +20,7 @@ import org.codice.imaging.nitf.core.tre.Tre;
 
 public enum TreDescriptor {
     ACFTB(AcftbAttribute.values()),
+    AIMIDB(AimidbAttribute.values()),
     MTIRPB(MtirpbAttribute.values());
 
     private NitfAttribute<Tre>[] nitfAttributes;
