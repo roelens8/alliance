@@ -14,6 +14,7 @@
 package org.codice.alliance.transformer.nitf.common;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -41,23 +42,30 @@ public class SegmentHandler {
         Function<T, Serializable> accessor = attribute.getAccessorFunction();
         Serializable value = accessor.apply(segment);
 
-        AttributeDescriptor descriptor = attribute.getAttributeDescriptor();
+        Set<AttributeDescriptor> descriptors = attribute.getAttributeDescriptors();
 
-        if (descriptor == null) {
+        if (descriptors == null) {
             LOGGER.debug("Could not set metacard attribute " + attribute.getLongName()
                     + " since it does not belong to this metacard type");
             return;
         }
 
-        if (descriptor.getType().equals(BasicTypes.STRING_TYPE) && value != null
-                && ((String) value).length() == 0) {
-            value = null;
+        for (AttributeDescriptor descriptor : descriptors) {
+            if (descriptor.getType()
+                    .equals(BasicTypes.STRING_TYPE) && value != null
+                    && value.toString().length() == 0) {
+                value = null;
+            }
         }
 
-        if (value != null) {
-            Attribute catalogAttribute = populateAttribute(metacard, descriptor.getName(), value);
-            LOGGER.trace("Setting the metacard attribute [{}, {}]", descriptor.getName(), value);
-            metacard.setAttribute(catalogAttribute);
+        for (AttributeDescriptor descriptor : descriptors) {
+            if (value != null) {
+                Attribute catalogAttribute = populateAttribute(metacard, descriptor.getName(), value);
+                LOGGER.trace("Setting the metacard attribute [{}, {}]",
+                        descriptor.getName(),
+                        value);
+                metacard.setAttribute(catalogAttribute);
+            }
         }
     }
 

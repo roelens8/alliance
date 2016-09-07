@@ -18,7 +18,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.codice.imaging.nitf.core.common.NitfFormatException;
@@ -28,17 +31,35 @@ import org.junit.Test;
 
 public class ImageAttributeTest {
 
+    public static final String COMMENT_1 = "comment 1";
+
+    public static final String COMMENT_2 = "comment 2";
+
+    public static final String COMMENT_3 = "comment 3";
+
     private ImageSegment imageSegment;
 
     @Before
     public void setUp() {
         this.imageSegment = mock(ImageSegment.class);
+        List<String> imageSegmentComments = new ArrayList<>();
+        imageSegmentComments.add(COMMENT_1);
+        imageSegmentComments.add(COMMENT_2);
+        imageSegmentComments.add(COMMENT_3);
+        when(imageSegment.getImageComments()).thenReturn(imageSegmentComments);
     }
 
     @Test
     public void testImageAttributes() throws NitfFormatException {
         Stream.of(ImageAttribute.values())
                 .forEach(attribute -> assertThat(attribute.getShortName(), is(notNullValue())));
+
+        assertThat(ImageAttribute.IMAGE_COMMENT_1.getAccessorFunction()
+                .apply(imageSegment), is(COMMENT_1));
+        assertThat(ImageAttribute.IMAGE_COMMENT_2.getAccessorFunction()
+                .apply(imageSegment), is(COMMENT_2));
+        assertThat(ImageAttribute.IMAGE_COMMENT_3.getAccessorFunction()
+                .apply(imageSegment), is(COMMENT_3));
 
         assertThat(ImageAttribute.TARGET_IDENTIFIER.getAccessorFunction()
                 .apply(imageSegment), is(nullValue()));

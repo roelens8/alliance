@@ -19,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.codice.alliance.catalog.core.api.types.Isr;
 import org.codice.alliance.transformer.nitf.common.SegmentHandler;
 import org.codice.imaging.nitf.core.common.NitfFormatException;
 import org.codice.imaging.nitf.core.common.TaggedRecordExtensionHandler;
@@ -37,7 +36,6 @@ import com.vividsolutions.jts.io.WKTReader;
 import ddf.catalog.data.Attribute;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.impl.AttributeImpl;
-import ddf.catalog.data.types.Core;
 import ddf.catalog.transform.CatalogTransformerException;
 
 public class NitfGmtiTransformer extends SegmentHandler {
@@ -51,14 +49,15 @@ public class NitfGmtiTransformer extends SegmentHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(NitfGmtiTransformer.class);
 
     // Handles locations that have either 6 or 7 decimal places
-    private static final String LOCATION_REGEX = "([+\\-]\\d{2}+\\.\\d{6,7}+)([+\\-]\\d{3}+\\.\\d{6,7})";
+    private static final String LOCATION_REGEX =
+            "([+\\-]\\d{2}+\\.\\d{6,7}+)([+\\-]\\d{3}+\\.\\d{6,7})";
 
     private static final Pattern LOCATION_PATTERN = Pattern.compile(LOCATION_REGEX);
 
     private GeometryFactory geometryFactory;
 
     public Metacard transform(NitfSegmentsFlow nitfSegmentsFlow, Metacard metacard)
-        throws IOException, CatalogTransformerException {
+            throws IOException, CatalogTransformerException {
 
         if (nitfSegmentsFlow == null) {
             throw new IllegalArgumentException("argument 'nitfSegmentsFlow' may not be null.");
@@ -78,23 +77,32 @@ public class NitfGmtiTransformer extends SegmentHandler {
     }
 
     private void handleHeader(TaggedRecordExtensionHandler header, Metacard metacard) {
-        List<Tre> tres = header.getTREsRawStructure().getTREs();
+        List<Tre> tres = header.getTREsRawStructure()
+                .getTREs();
 
-        tres.stream().filter(tre -> ACFTB.equals(tre.getName().trim()))
+        tres.stream()
+                .filter(tre -> ACFTB.equals(tre.getName()
+                        .trim()))
                 .forEach(tre -> handleSegmentHeader(metacard, tre, AcftbAttribute.values()));
 
-        tres.stream().filter(tre -> MTIRPB.equals(tre.getName().trim())).forEach(tre -> {
-            handleSegmentHeader(metacard, tre, MtirpbAttribute.values());
+        tres.stream()
+                .filter(tre -> MTIRPB.equals(tre.getName()
+                        .trim()))
+                .forEach(tre -> {
+                    handleSegmentHeader(metacard, tre, MtirpbAttribute.values());
 
-            try {
-                List<TreGroup> targets = tre.getEntry(TARGETS).getGroups();
+                    try {
+                        List<TreGroup> targets = tre.getEntry(TARGETS)
+                                .getGroups();
 
-                targets.stream().forEach(group -> handleSegmentHeader(metacard, group,
-                        IndexedMtirpbAttribute.values()));
-            } catch (NitfFormatException e) {
-                LOGGER.debug("Could not parse NITF target information: ", e);
-            }
-        });
+                        targets.stream()
+                                .forEach(group -> handleSegmentHeader(metacard,
+                                        group,
+                                        IndexedMtirpbAttribute.values()));
+                    } catch (NitfFormatException e) {
+                        LOGGER.debug("Could not parse NITF target information: ", e);
+                    }
+                });
     }
 
     private void transformTargetLocation(Metacard metacard) {
@@ -108,9 +116,11 @@ public class NitfGmtiTransformer extends SegmentHandler {
                 WKTReader wktReader = new WKTReader(geometryFactory);
                 Geometry geometry = wktReader.read(locationString);
 
-                LOGGER.debug("Setting the metacard attribute [{}, {}]", Core.LOCATION,
-                        geometry.toText());
-                metacard.setAttribute(new AttributeImpl(Core.LOCATION, geometry.toText()));
+                IndexedMtirpbAttribute.INDEXED_TARGET_LOCATION.getAttributeDescriptors()
+                        .stream()
+                        .forEach(descriptor -> setMetacardAttribute(metacard,
+                                descriptor.getName(),
+                                geometry.toText()));
             }
 
         } catch (ParseException e) {
@@ -119,16 +129,22 @@ public class NitfGmtiTransformer extends SegmentHandler {
     }
 
     private String formatTargetLocation(Metacard metacard) {
-        Attribute locationAttribute = metacard.getAttribute(
-                IndexedMtirpbAttribute.INDEXED_TARGET_LOCATION.getAttributeDescriptor().getName());
+        Attribute locationAttribute =
+                IndexedMtirpbAttribute.INDEXED_TARGET_LOCATION.getAttributeDescriptors()
+                        .stream()
+                        .map(descriptor -> metacard.getAttribute(descriptor.getName()))
+                        .findFirst()
+                        .orElse(null);
 
         if (locationAttribute != null) {
             StringBuilder stringBuilder = new StringBuilder("MULTIPOINT (");
 
-            locationAttribute.getValues().stream().forEach(value -> {
-                parseLocation(stringBuilder, value.toString());
-                stringBuilder.append(",");
-            });
+            locationAttribute.getValues()
+                    .stream()
+                    .forEach(value -> {
+                        parseLocation(stringBuilder, value.toString());
+                        stringBuilder.append(",");
+                    });
 
             stringBuilder.deleteCharAt(stringBuilder.lastIndexOf(","));
             stringBuilder.append(")");
@@ -139,7 +155,6 @@ public class NitfGmtiTransformer extends SegmentHandler {
     }
 
     private void transformAircraftLocation(Metacard metacard) {
-
         String aircraftLocation = formatAircraftLocation(metacard);
 
         try {
@@ -150,9 +165,11 @@ public class NitfGmtiTransformer extends SegmentHandler {
                 WKTReader wktReader = new WKTReader(geometryFactory);
                 Geometry geometry = wktReader.read(aircraftLocation);
 
-                LOGGER.debug("Setting the metacard attribute [{}, {}]", Isr.DWELL_LOCATION,
-                        aircraftLocation);
-                metacard.setAttribute(new AttributeImpl(Isr.DWELL_LOCATION, aircraftLocation));
+                MtirpbAttribute.AIRCRAFT_LOCATION.getAttributeDescriptors()
+                        .stream()
+                        .forEach(descriptor -> setMetacardAttribute(metacard,
+                                descriptor.getName(),
+                                aircraftLocation));
             }
 
         } catch (ParseException e) {
@@ -161,13 +178,17 @@ public class NitfGmtiTransformer extends SegmentHandler {
     }
 
     private String formatAircraftLocation(Metacard metacard) {
-        Attribute aircraftLocation = metacard
-                .getAttribute(MtirpbAttribute.AIRCRAFT_LOCATION.getAttributeDescriptor().getName());
+        Attribute aircraftLocation = MtirpbAttribute.AIRCRAFT_LOCATION.getAttributeDescriptors()
+                .stream()
+                .map(descriptor -> metacard.getAttribute(descriptor.getName()))
+                .findFirst()
+                .orElse(null);
 
-        if (aircraftLocation != null
-                && StringUtils.isNotEmpty(aircraftLocation.getValue().toString())) {
+        if (aircraftLocation != null && StringUtils.isNotEmpty(aircraftLocation.getValue()
+                .toString())) {
 
-            String unformattedAircraftLocation = aircraftLocation.getValue().toString();
+            String unformattedAircraftLocation = aircraftLocation.getValue()
+                    .toString();
 
             StringBuilder sb = new StringBuilder("POINT (");
             parseLocation(sb, unformattedAircraftLocation);
@@ -197,5 +218,10 @@ public class NitfGmtiTransformer extends SegmentHandler {
 
     public void setGeometryFactory(GeometryFactory geometryFactory) {
         this.geometryFactory = geometryFactory;
+    }
+
+    private void setMetacardAttribute(Metacard metacard, String attrName, String value) {
+        LOGGER.trace("Setting the metacard attribute [{}, {}]", attrName, value);
+        metacard.setAttribute(new AttributeImpl(attrName, value));
     }
 }
