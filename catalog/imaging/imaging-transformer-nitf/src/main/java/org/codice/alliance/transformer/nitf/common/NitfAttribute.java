@@ -14,6 +14,7 @@
 package org.codice.alliance.transformer.nitf.common;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.function.Function;
 
 import ddf.catalog.data.AttributeDescriptor;
@@ -44,7 +45,7 @@ public interface NitfAttribute<T> {
     Function<T, Serializable> getAccessorFunction();
 
     /**
-     * @return an AttributeDescriptor for this attribute.
+     * @return AttributeDescriptors for this attribute.
      */
-    AttributeDescriptor getAttributeDescriptor();
+    Set<AttributeDescriptor> getAttributeDescriptors();
 }

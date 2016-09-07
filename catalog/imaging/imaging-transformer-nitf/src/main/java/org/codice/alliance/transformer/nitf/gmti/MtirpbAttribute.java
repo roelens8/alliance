@@ -14,29 +14,76 @@
 package org.codice.alliance.transformer.nitf.gmti;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
+import org.apache.commons.lang.StringUtils;
 import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
 import org.codice.alliance.catalog.core.api.types.Isr;
+import org.codice.alliance.transformer.nitf.ExtNitfUtility;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.imaging.nitf.core.tre.Tre;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ddf.catalog.data.AttributeDescriptor;
-import ddf.catalog.data.MetacardType;
+import ddf.catalog.data.impl.AttributeDescriptorImpl;
+import ddf.catalog.data.impl.BasicTypes;
 
 public enum MtirpbAttribute implements NitfAttribute<Tre> {
-    AIRCRAFT_LOCATION(Isr.DWELL_LOCATION,
-            "ACFT_LOC",
-            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_LOC"),
-            new IsrAttributes()),
+
+    /*
+     * Normalized attributes. These taxonomy terms will be duplicated by `ext.nitf.mtirpb.*` when
+     * appropriate
+     */
+
     NUMBER_OF_VALID_TARGETS(Isr.TARGET_REPORT_COUNT,
             "NO_VALID_TARGETS",
             tre -> GmtiTreUtility.getTreValue(tre, "NO_VALID_TARGETS"),
-            new IsrAttributes());
+            new IsrAttributes().getAttributeDescriptor(Isr.TARGET_REPORT_COUNT),
+            "numberOfValidTargets"),
+
+    /*
+     * Non-normalized attributes
+     */
+
+    AIRCRAFT_LOCATION("aircraftLocation",
+            "ACFT_LOC",
+            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_LOC")),
+    AIRCRAFT_ALTITUDE("aircraftAltitude",
+            "ACFT_ALT",
+            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_ALT")),
+    AIRCRAFT_ALTITUDE_UNITS("aircraftAltitudeUnitOfMeasure",
+            "ACFT_ALT_UNIT",
+            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_ALT_UNIT")),
+    AIRCRAFT_HEADING("aircraftHeading",
+            "ACFT_HEADING",
+            tre -> GmtiTreUtility.getTreValue(tre, "ACFT_HEADING")),
+    COSINE_OF_GRAZE_ANGLE("cosineOfGrazeAngle",
+            "COSGRZ",
+            tre -> GmtiTreUtility.getTreValue(tre, "COSGRZ")),
+    DESTINATION_POINT("destinationPoint",
+            "MTI_DP",
+            tre -> GmtiTreUtility.getTreValue(tre, "MTI_DP")),
+    MTI_LR("mtiLeftOrRight", "MTI_LR", tre -> GmtiTreUtility.getTreValue(tre, "MTI_LR")),
+    PATCH_NUMBER("patchNumber", "PATCH_NO", tre -> GmtiTreUtility.getTreValue(tre, "PATCH_NO")),
+    SCAN_DATE_AND_TIME("scanDateAndTime",
+            "DATIME",
+            tre -> GmtiTreUtility.getTreValue(tre, "DATIME")),
+    SQUINT_ANGLE("squintAngle",
+            "SQUINT_ANGLE",
+            tre -> GmtiTreUtility.getTreValue(tre, "SQUINT_ANGLE")),
+    WIDE_AREA_MTI_FRAME_NUMBER("wideAreaMtiFrameNumber",
+            "WAMTI_FRAME_NO",
+            tre -> GmtiTreUtility.getTreValue(tre, "WAMTI_FRAME_NO")),
+    WIDE_AREA_MTI_BAR_NUMBER("wideAreaMtiBarNumber",
+            "WAMTI_BAR_NO",
+            tre -> GmtiTreUtility.getTreValue(tre, "WAMTI_BAR_NO"));
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MtirpbAttribute.class);
+
+    private static final String ATTRIBUTE_NAME_PREFIX = "mtirpb.";
 
     private String shortName;
 
@@ -44,17 +91,37 @@ public enum MtirpbAttribute implements NitfAttribute<Tre> {
 
     private Function<Tre, Serializable> accessorFunction;
 
-    private AttributeDescriptor attributeDescriptor;
+    private Set<AttributeDescriptor> attributeDescriptors;
 
-    MtirpbAttribute(String longName,
-                    String shortName,
-                    Function<Tre, Serializable> accessorFunction,
-                    MetacardType metacardType) {
+    MtirpbAttribute(String longName, String shortName,
+            Function<Tre, Serializable> accessorFunction) {
         this.longName = longName;
         this.shortName = shortName;
         this.accessorFunction = accessorFunction;
         // retrieving metacard attribute descriptor for this attribute to prevent later lookups
-        this.attributeDescriptor = metacardType.getAttributeDescriptor(longName);
+        this.attributeDescriptors = new HashSet<>();
+        this.attributeDescriptors.add(new AttributeDescriptorImpl(
+                ExtNitfUtility.EXT_NITF_PREFIX + ATTRIBUTE_NAME_PREFIX + longName,
+                true, /* indexed */
+                true, /* stored */
+                false, /* tokenized */
+                true, /* multivalued */
+                BasicTypes.STRING_TYPE));
+    }
+
+    MtirpbAttribute(String longName, String shortName, Function<Tre, Serializable> accessorFunction,
+            AttributeDescriptor attributeDescriptor, String extNitfName) {
+        this.longName = longName;
+        this.shortName = shortName;
+        this.accessorFunction = accessorFunction;
+        // retrieving metacard attribute descriptor for this attribute to prevent later lookups
+        this.attributeDescriptors = new HashSet<>();
+        this.attributeDescriptors.add(attributeDescriptor);
+        if (StringUtils.isNotEmpty(extNitfName)) {
+            this.attributeDescriptors.add(ExtNitfUtility.createDuplicateDescriptorAndRename(
+                    ATTRIBUTE_NAME_PREFIX + extNitfName,
+                    attributeDescriptor));
+        }
     }
 
     @Override
@@ -73,7 +140,7 @@ public enum MtirpbAttribute implements NitfAttribute<Tre> {
     }
 
     @Override
-    public AttributeDescriptor getAttributeDescriptor() {
-        return this.attributeDescriptor;
+    public Set<AttributeDescriptor> getAttributeDescriptors() {
+        return this.attributeDescriptors;
     }
 }

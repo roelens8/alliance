@@ -20,42 +20,14 @@
            http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0
            http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
 
-    <bean id="imageMetacardType"
-          class="ddf.catalog.data.impl.MetacardTypeImpl">
-        <argument value="isr.image"/>
-        <argument>
-            <list>
-                <bean class="ddf.catalog.data.impl.types.AssociationsAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.ContactAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.MediaAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.DateTimeAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.LocationAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.ValidationAttributes"/>
-                <bean class="org.codice.alliance.catalog.core.api.impl.types.IsrAttributes"/>
-                <bean class="org.codice.alliance.catalog.core.api.impl.types.SecurityAttributes"/>
-            </list>
-        </argument>
+    <bean id="imageMetacardType" class="org.codice.alliance.transformer.nitf.image.ImageMetacardType">
     </bean>
 
     <bean id="imageMetacardFactory" class="org.codice.alliance.transformer.nitf.MetacardFactory">
         <property name="metacardType" ref="imageMetacardType"/>
     </bean>
 
-    <bean id="gmtiMetacardType"
-          class="ddf.catalog.data.impl.MetacardTypeImpl">
-        <argument value="isr.gmti"/>
-        <argument>
-            <list>
-                <bean class="ddf.catalog.data.impl.types.AssociationsAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.ContactAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.MediaAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.DateTimeAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.LocationAttributes"/>
-                <bean class="ddf.catalog.data.impl.types.ValidationAttributes"/>
-                <bean class="org.codice.alliance.catalog.core.api.impl.types.IsrAttributes"/>
-                <bean class="org.codice.alliance.catalog.core.api.impl.types.SecurityAttributes"/>
-            </list>
-        </argument>
+    <bean id="gmtiMetacardType" class="org.codice.alliance.transformer.nitf.gmti.GmtiMetacardType">
     </bean>
 
     <bean id="geometryFactory" class="com.vividsolutions.jts.geom.GeometryFactory"/>

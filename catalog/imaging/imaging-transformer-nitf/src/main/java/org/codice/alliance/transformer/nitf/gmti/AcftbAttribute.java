@@ -14,33 +14,68 @@
 package org.codice.alliance.transformer.nitf.gmti;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
+import org.apache.commons.lang.StringUtils;
 import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
 import org.codice.alliance.catalog.core.api.types.Isr;
+import org.codice.alliance.transformer.nitf.ExtNitfUtility;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.imaging.nitf.core.tre.Tre;
 
 import ddf.catalog.data.AttributeDescriptor;
-import ddf.catalog.data.MetacardType;
+import ddf.catalog.data.impl.AttributeDescriptorImpl;
+import ddf.catalog.data.impl.BasicTypes;
 
-enum AcftbAttribute implements NitfAttribute<Tre> {
+public enum AcftbAttribute implements NitfAttribute<Tre> {
+
+    /*
+     * Normalized attributes. These taxonomy terms will be duplicated by `ext.nitf.acftb.*` when
+     * appropriate
+     */
+
     AIRCRAFT_MISSION_ID(Isr.MISSION_ID,
             "AC_MSN_ID",
             tre -> GmtiTreUtility.getTreValue(tre, "AC_MSN_ID"),
-            new IsrAttributes()),
+            new IsrAttributes().getAttributeDescriptor(Isr.MISSION_ID),
+            "aircraftMissionId"),
     AIRCRAFT_TAIL_NUMBER(Isr.PLATFORM_ID,
             "AC_TAIL_NO",
             tre -> GmtiTreUtility.getTreValue(tre, "AC_TAIL_NO"),
-            new IsrAttributes()),
+            new IsrAttributes().getAttributeDescriptor(Isr.PLATFORM_ID),
+            "aircraftTailNumber"),
     SENSOR_ID_TYPE(Isr.SENSOR_TYPE,
             "SENSOR_ID_TYPE",
             tre -> GmtiTreUtility.getTreValue(tre, "SENSOR_ID_TYPE"),
-            new IsrAttributes()),
+            new IsrAttributes().getAttributeDescriptor(Isr.SENSOR_TYPE),
+            "sensorIdType"),
     SENSOR_ID(Isr.SENSOR_ID,
             "SENSOR_ID",
             tre -> GmtiTreUtility.getTreValue(tre, "SENSOR_ID"),
-            new IsrAttributes());
+            new IsrAttributes().getAttributeDescriptor(Isr.SENSOR_ID),
+            "sensorId"),
+
+    /*
+     * Non-normalized attributes
+     */
+
+    AIRCRAFT_TAKEOFF("aircraftTakeOff", "AC_TO", tre -> GmtiTreUtility.getTreValue(tre, "AC_TO")),
+    SCENE_SOURCE("sceneSource",
+            "SCENE_SOURCE",
+            tre -> GmtiTreUtility.getTreValue(tre, "SCENE_SOURCE")),
+    SCENE_NUMBER("sceneNumber", "SCNUM", tre -> GmtiTreUtility.getTreValue(tre, "SCNUM")),
+    PROCESSING_DATE("processingDate", "PDATE", tre -> GmtiTreUtility.getTreValue(tre, "PDATE")),
+    IMMEDIATE_SCENE_HOST("immediateSceneHost",
+            "IMHOSTNO",
+            tre -> GmtiTreUtility.getTreValue(tre, "IMHOSTNO")),
+    IMMEDIATE_SCENE_REQUEST_ID("immediateSceneRequestId",
+            "IMREQID",
+            tre -> GmtiTreUtility.getTreValue(tre, "IMREQID")),
+    MISSION_PLAN_MODE("missionPlanMode", "MPLAN", tre -> GmtiTreUtility.getTreValue(tre, "MPLAN"));
+
+    private static final String ATTRIBUTE_NAME_PREFIX = "acftb.";
 
     private String shortName;
 
@@ -48,17 +83,37 @@ enum AcftbAttribute implements NitfAttribute<Tre> {
 
     private Function<Tre, Serializable> accessorFunction;
 
-    private AttributeDescriptor attributeDescriptor;
+    private Set<AttributeDescriptor> attributeDescriptors;
 
-    AcftbAttribute(String longName,
-                   String shortName,
-                   Function<Tre, Serializable> accessorFunction,
-                   MetacardType metacardType) {
+    AcftbAttribute(final String longName, final String shortName,
+            final Function<Tre, Serializable> accessorFunction) {
         this.longName = longName;
         this.shortName = shortName;
         this.accessorFunction = accessorFunction;
-        // retrieving metacard attribute descriptor for this attribute to prevent later lookups
-        this.attributeDescriptor = metacardType.getAttributeDescriptor(longName);
+        // retrieving metacard attribute descriptors for this attribute to prevent later lookups
+        this.attributeDescriptors = new HashSet<>();
+        this.attributeDescriptors.add(new AttributeDescriptorImpl(
+                ExtNitfUtility.EXT_NITF_PREFIX + ATTRIBUTE_NAME_PREFIX + longName,
+                true, /* indexed */
+                true, /* stored */
+                false, /* tokenized */
+                true, /* multivalued */
+                BasicTypes.STRING_TYPE));
+    }
+
+    AcftbAttribute(String longName, String shortName, Function<Tre, Serializable> accessorFunction,
+            AttributeDescriptor attributeDescriptor, String extNitfName) {
+        this.longName = longName;
+        this.shortName = shortName;
+        this.accessorFunction = accessorFunction;
+        // retrieving metacard attribute descriptors for this attribute to prevent later lookups
+        this.attributeDescriptors = new HashSet<>();
+        this.attributeDescriptors.add(attributeDescriptor);
+        if (StringUtils.isNotEmpty(extNitfName)) {
+            this.attributeDescriptors.add(ExtNitfUtility.createDuplicateDescriptorAndRename(
+                    ATTRIBUTE_NAME_PREFIX + extNitfName,
+                    attributeDescriptor));
+        }
     }
 
     @Override
@@ -77,7 +132,7 @@ enum AcftbAttribute implements NitfAttribute<Tre> {
     }
 
     @Override
-    public AttributeDescriptor getAttributeDescriptor() {
-        return this.attributeDescriptor;
+    public Set<AttributeDescriptor> getAttributeDescriptors() {
+        return this.attributeDescriptors;
     }
 }

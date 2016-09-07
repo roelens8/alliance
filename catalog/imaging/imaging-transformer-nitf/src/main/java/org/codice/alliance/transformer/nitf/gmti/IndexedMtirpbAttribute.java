@@ -14,21 +14,58 @@
 package org.codice.alliance.transformer.nitf.gmti;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
+import org.apache.commons.lang.StringUtils;
+import org.codice.alliance.transformer.nitf.ExtNitfUtility;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.imaging.nitf.core.tre.TreGroup;
 
 import ddf.catalog.data.AttributeDescriptor;
-import ddf.catalog.data.MetacardType;
+import ddf.catalog.data.impl.AttributeDescriptorImpl;
+import ddf.catalog.data.impl.BasicTypes;
 import ddf.catalog.data.impl.types.CoreAttributes;
 import ddf.catalog.data.types.Core;
 
-enum IndexedMtirpbAttribute implements NitfAttribute<TreGroup> {
+public enum IndexedMtirpbAttribute implements NitfAttribute<TreGroup> {
+
+    /*
+     * Normalized attributes. These taxonomy terms will be duplicated by `ext.nitf.mtirpb.*` when
+     * appropriate
+     */
+
     INDEXED_TARGET_LOCATION(Core.LOCATION,
             "TGT_LOC",
             tre -> GmtiTreUtility.getTreValue(tre, "TGT_LOC"),
-            new CoreAttributes());
+            new CoreAttributes().getAttributeDescriptor(Core.LOCATION),
+            "targetLocation"),
+
+    /*
+     * Non-normalized attributes
+     */
+
+    INDEXED_TARGET_CLASSIFICATION_CATEGORY("targetClassificationCategory",
+            "TGT_CAT",
+            tre -> getClassificationCategory(tre)),
+    INDEXED_TARGET_AMPLITUDE("targetAmplitude",
+            "TGT_AMPLITUDE",
+            tre -> GmtiTreUtility.getTreValue(tre, "TGT_AMPLITUDE")),
+    INDEXED_TARGET_HEADING("targetHeading",
+            "TGT_HEADING",
+            tre -> GmtiTreUtility.getTreValue(tre, "TGT_HEADING")),
+    INDEXED_TARGET_GROUND_SPEED("targetGroundSpeed",
+            "TGT_SPEED",
+            tre -> GmtiTreUtility.getTreValue(tre, "TGT_SPEED")),
+    INDEXED_TARGET_RADIAL_VELOCITY("targetRadialVelocity",
+            "TGT_VEL_R",
+            tre -> GmtiTreUtility.getTreValue(tre, "TGT_VEL_R")),
+    INDEXED_TARGET_LOCATION_ACCURACY("targetLocationAccuracy",
+            "TGT_LOC_ACCY",
+            tre -> GmtiTreUtility.getTreValue(tre, "TGT_LOC_ACCY"));
+
+    private static final String ATTRIBUTE_NAME_PREFIX = "mtirpb.";
 
     private String shortName;
 
@@ -36,17 +73,38 @@ enum IndexedMtirpbAttribute implements NitfAttribute<TreGroup> {
 
     private Function<TreGroup, Serializable> accessorFunction;
 
-    private AttributeDescriptor attributeDescriptor;
+    private Set<AttributeDescriptor> attributeDescriptors;
 
-    IndexedMtirpbAttribute(String longName,
-                           String shortName,
-                           Function<TreGroup, Serializable> accessorFunction,
-                           MetacardType metacardType) {
+    IndexedMtirpbAttribute(String longName, String shortName,
+            Function<TreGroup, Serializable> accessorFunction) {
         this.longName = longName;
         this.shortName = shortName;
         this.accessorFunction = accessorFunction;
-        // retrieving metacard attribute descriptor for this attribute to prevent later lookups
-        this.attributeDescriptor = metacardType.getAttributeDescriptor(longName);
+        // retrieving metacard attribute descriptors for this attribute to prevent later lookups
+        this.attributeDescriptors = new HashSet<>();
+        this.attributeDescriptors.add(new AttributeDescriptorImpl(
+                ExtNitfUtility.EXT_NITF_PREFIX + ATTRIBUTE_NAME_PREFIX + longName,
+                true, /* indexed */
+                true, /* stored */
+                false, /* tokenized */
+                true, /* multivalued */
+                BasicTypes.STRING_TYPE));
+    }
+
+    IndexedMtirpbAttribute(String longName, String shortName,
+            Function<TreGroup, Serializable> accessorFunction,
+            AttributeDescriptor attributeDescriptor, String extNitfName) {
+        this.longName = longName;
+        this.shortName = shortName;
+        this.accessorFunction = accessorFunction;
+        // retrieving metacard attribute descriptors for this attribute to prevent later lookups
+        this.attributeDescriptors = new HashSet<>();
+        this.attributeDescriptors.add(attributeDescriptor);
+        if (StringUtils.isNotEmpty(extNitfName)) {
+            this.attributeDescriptors.add(ExtNitfUtility.createDuplicateDescriptorAndRename(
+                    ATTRIBUTE_NAME_PREFIX + extNitfName,
+                    attributeDescriptor));
+        }
     }
 
     @Override
@@ -65,7 +123,18 @@ enum IndexedMtirpbAttribute implements NitfAttribute<TreGroup> {
     }
 
     @Override
-    public AttributeDescriptor getAttributeDescriptor() {
-        return this.attributeDescriptor;
+    public Set<AttributeDescriptor> getAttributeDescriptors() {
+        return this.attributeDescriptors;
+    }
+
+    private static String getClassificationCategory(TreGroup treGroup) {
+        Serializable value = GmtiTreUtility.getTreValue(treGroup,
+                INDEXED_TARGET_CLASSIFICATION_CATEGORY.getShortName());
+
+        if (value == null) {
+            return MtiTargetClassificationCategory.U.getLongName();
+        }
+        return MtiTargetClassificationCategory.valueOf((String) value)
+                .getLongName();
     }
 }
