@@ -16,6 +16,7 @@ package org.codice.alliance.transformer.nitf.image;
 import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
 import org.codice.alliance.catalog.core.api.impl.types.SecurityAttributes;
 import org.codice.alliance.transformer.nitf.AbstractNitfMetacardType;
+import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
 import org.codice.alliance.transformer.nitf.gmti.AcftbAttribute;
 import org.codice.alliance.transformer.nitf.gmti.IndexedMtirpbAttribute;
@@ -44,6 +45,7 @@ public class ImageMetacardType extends AbstractNitfMetacardType {
         descriptors.addAll(getDescriptors(LabelAttribute.values()));
         descriptors.addAll(getDescriptors(SymbolAttribute.values()));
         descriptors.addAll(getDescriptors(TextAttribute.values()));
+        descriptors.addAll(getDescriptors(AcftbAttribute.values()));
         descriptors.addAll(getDescriptors(NitfHeaderAttribute.values()));
         descriptors.addAll(getDescriptors(AcftbAttribute.values()));
         descriptors.addAll(getDescriptors(IndexedMtirpbAttribute.values()));
