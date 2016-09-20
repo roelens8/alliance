@@ -12,7 +12,9 @@
  *
  **/
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>imaging</artifactId>
@@ -82,6 +84,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.codice.ddf</groupId>
+            <artifactId>geospatial</artifactId>
+            <version>${ddf.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
             <version>${thumbnailator.version}</version>
@@ -103,7 +111,7 @@
             <artifactId>jai-imageio-core</artifactId>
             <version>${jai-imageio-core.version}</version>
         </dependency>
-            
+
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-jpeg2000</artifactId>
@@ -135,6 +143,7 @@
                             codice-imaging-nitf-core,
                             codice-imaging-nitf-render,
                             codice-imaging-nitf-fluent-api,
+                            geospatial,
                             jai-imageio-core,
                             jai-imageio-jpeg2000
                         </Embed-Dependency>
