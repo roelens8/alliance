@@ -20,9 +20,12 @@ import org.codice.alliance.transformer.nitf.gmti.MtirpbAttribute;
 import org.codice.imaging.nitf.core.tre.Tre;
 
 public enum TreDescriptor {
-    ACFTB(AcftbAttribute.getAttributes()), MTIRPB(MtirpbAttribute.getAttributes()), CSEXRA(
-            CsexraAttribute.getAttributes()), PIAIMC(PiaimcAttribute.getAttributes()), CSDIDA(
-            CsdidaAttribute.getAttributes());
+    ACFTB(AcftbAttribute.getAttributes()),
+    AIMIDB(AimidbAttribute.getAttributes()),
+    MTIRPB(MtirpbAttribute.getAttributes()),
+    CSEXRA(CsexraAttribute.getAttributes()),
+    PIAIMC(PiaimcAttribute.getAttributes()),
+    CSDIDA(CsdidaAttribute.getAttributes());
 
     private List<NitfAttribute<Tre>> nitfAttributes;
 

@@ -47,6 +47,24 @@ public final class TreUtility {
         return null;
     }
 
+    public static String convertToString(Tre tre, String fieldName) {
+        Serializable value = TreUtility.getTreValue(tre, fieldName);
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            return null;
+        }
+    }
+
+    public static Integer convertToInteger(Tre tre, String fieldName) {
+        Serializable value = TreUtility.getTreValue(tre, fieldName);
+        if (value instanceof String) {
+            return Integer.valueOf((String) value);
+        } else {
+            return null;
+        }
+    }
+
     public static Optional<Integer> findIntValue(Tre tre, String tagName) {
         try {
             return Optional.of(tre.getIntValue(tagName));

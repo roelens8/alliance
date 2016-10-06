@@ -42,6 +42,8 @@ import java.util.stream.IntStream;
 import org.codice.alliance.catalog.core.api.types.Isr;
 import org.codice.alliance.transformer.nitf.MetacardFactory;
 import org.codice.alliance.transformer.nitf.NitfParserAdapter;
+import org.codice.alliance.transformer.nitf.TreTestUtility;
+import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderTransformer;
@@ -191,6 +193,66 @@ public class ImageInputTransformerTest {
         return IntStream.range(0, length)
                 .mapToObj(x -> "x")
                 .collect(Collectors.joining());
+    }
+
+    private Map<NitfAttribute, Object> createNitfWithAimidb(File file) {
+        String acquisitionDate = "20161013121212";
+        String missionNumber = "UNKN";
+        String country = "US";
+        String location = "4559N23345W";
+
+        Tre aimidb = TreFactory.getDefault("AIMIDB", TreSource.ImageExtendedSubheaderData);
+        aimidb.add(new TreEntry("ACQUISITION_DATE", acquisitionDate, "string"));
+        aimidb.add(new TreEntry("MISSION_NO", missionNumber, "string"));
+        aimidb.add(new TreEntry("MISSION_IDENTIFICATION", "NOT AVAIL.", "string"));
+        aimidb.add(new TreEntry("FLIGHT_NO", "01", "string"));
+        aimidb.add(new TreEntry("OP_NUM", "001", "UINT"));
+        aimidb.add(new TreEntry("CURRENT_SEGMENT", "AA", "string"));
+        aimidb.add(new TreEntry("REPRO_NUM", "01", "UINT"));
+        aimidb.add(new TreEntry("REPLAY", "000", "string"));
+        aimidb.add(new TreEntry("RESERVED_1", " ", "string"));
+        aimidb.add(new TreEntry("START_TILE_COLUMN", "001", "UINT"));
+        aimidb.add(new TreEntry("START_TILE_ROW", "00001", "UINT"));
+        aimidb.add(new TreEntry("END_SEGMENT", "AA", "string"));
+        aimidb.add(new TreEntry("END_TILE_COLUMN", "001", "UINT"));
+        aimidb.add(new TreEntry("END_TILE_ROW", "00001", "UINT"));
+        aimidb.add(new TreEntry("COUNTRY", country, "string"));
+        aimidb.add(new TreEntry("RESERVED_2", "    ", "string"));
+        aimidb.add(new TreEntry("LOCATION", location, "string"));
+        aimidb.add(new TreEntry("RESERVED_3", "             ", "string"));
+        ImageSegment imageSegment = TreTestUtility.createImageSegment();
+        imageSegment.getTREsRawStructure()
+                .add(aimidb);
+
+        new NitfCreationFlow().fileHeader(() -> TreTestUtility.createFileHeader())
+                .imageSegment(() -> imageSegment)
+                .write(file.getAbsolutePath());
+
+        // key value pair of nitf attributes and expected getAttributes
+        Map<NitfAttribute, Object> assertMap = new HashMap<>();
+        assertMap.put(AimidbAttribute.ACQUISITION_DATE, acquisitionDate);
+        assertMap.put(AimidbAttribute.MISSION_NUMBER, missionNumber);
+        assertMap.put(AimidbAttribute.COUNTRY, country);
+        assertMap.put(AimidbAttribute.LOCATION, location);
+        return assertMap;
+    }
+
+    @Test
+    public void testAimidb() throws IOException, NitfFormatException {
+        File nitfFile = File.createTempFile("nitf-", ".ntf");
+        try {
+            Map<NitfAttribute, Object> treMap = createNitfWithAimidb(nitfFile);
+
+            try (InputStream inputStream = new FileInputStream(nitfFile)) {
+                Metacard metacard = metacardFactory.createMetacard("aimidbTest");
+                NitfSegmentsFlow nitfSegmentsFlow = new NitfParserAdapter().parseNitf(inputStream);
+                headerTransformer.transform(nitfSegmentsFlow, metacard);
+                transformer.transform(nitfSegmentsFlow, metacard);
+                assertAttributesMap(metacard, treMap);
+            }
+        } finally {
+            nitfFile.delete();
+        }
     }
 
     private void createNitfWithCsdida(File file) {
