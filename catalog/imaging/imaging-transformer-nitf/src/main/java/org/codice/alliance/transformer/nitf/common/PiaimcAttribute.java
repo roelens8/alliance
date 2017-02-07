@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
 import org.codice.alliance.catalog.core.api.types.Isr;
 import org.codice.alliance.transformer.nitf.ExtNitfUtility;
@@ -236,9 +237,9 @@ public class PiaimcAttribute extends NitfAttributeImpl<Tre> {
         return Optional.ofNullable(TreUtility.getTreValue(tre, CLOUDCVR_SHORT_NAME))
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
+                .filter(StringUtils::isNotEmpty)
                 .map(Integer::valueOf)
-                .filter(value -> value >= 0)
-                .filter(value -> value <= 100)
+                .filter(value -> value >= 0 && value <= 100)
                 .orElse(null);
     }
 
