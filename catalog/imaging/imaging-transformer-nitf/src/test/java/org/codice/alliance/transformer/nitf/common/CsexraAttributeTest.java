@@ -93,6 +93,16 @@ public class CsexraAttributeTest {
 
     }
 
+    @Test
+    public void testNiirsEmptyString() throws NitfFormatException {
+        when(tre.getFieldValue(CsexraAttribute.PREDICTED_NIIRS_SHORT_NAME)).thenReturn("");
+
+        Serializable actual = CsexraAttribute.PREDICTED_NIIRS_ATTRIBUTE.getAccessorFunction()
+                .apply(tre);
+
+        assertThat(actual, nullValue());
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testNiirsNotSet() throws NitfFormatException {
@@ -153,6 +163,16 @@ public class CsexraAttributeTest {
                 .apply(tre);
 
         assertThat(actual, is(nullValue()));
+    }
+
+    @Test
+    public void testSnowDepthMinCategoryEmptyString() throws NitfFormatException {
+        when(tre.getFieldValue(CsexraAttribute.SNOW_DEPTH_CAT_SHORT_NAME)).thenReturn("");
+
+        Serializable actual = CsexraAttribute.SNOW_DEPTH_MIN_ATTRIBUTE.getAccessorFunction()
+                .apply(tre);
+
+        assertThat(actual, nullValue());
     }
 
     @SuppressWarnings("unchecked")

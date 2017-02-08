@@ -72,6 +72,14 @@ public class PiaimcAttributeTest {
     }
 
     @Test
+    public void testCloudCoverEmptyString() throws NitfFormatException {
+        when(tre.getFieldValue(PiaimcAttribute.CLOUDCVR_SHORT_NAME)).thenReturn("");
+        Serializable actual = PiaimcAttribute.CLOUDCVR_ATTRIBUTE.getAccessorFunction()
+                .apply(tre);
+        assertThat(actual, nullValue());
+    }
+
+    @Test
     public void testSrpTrue() throws NitfFormatException {
         when(tre.getFieldValue(PiaimcAttribute.STANDARD_RADIOMETRIC_PRODUCT_SHORT_NAME)).thenReturn("Y");
         Serializable actual = PiaimcAttribute.SRP_ATTRIBUTE.getAccessorFunction()

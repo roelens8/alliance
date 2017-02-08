@@ -20,6 +20,7 @@ import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.codice.imaging.nitf.core.common.NitfFormatException;
 import org.codice.imaging.nitf.core.tre.Tre;
@@ -32,7 +33,8 @@ public final class TreUtility {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TreUtility.class);
 
-    private static final FastDateFormat DATE_FORMATTER = FastDateFormat.getInstance(TRE_DATE_FORMAT, TimeZone.getTimeZone("GMT"));
+    private static final FastDateFormat DATE_FORMATTER = FastDateFormat.getInstance(TRE_DATE_FORMAT,
+            TimeZone.getTimeZone("GMT"));
 
     private TreUtility() {
     }
@@ -62,7 +64,7 @@ public final class TreUtility {
     @Nullable
     public static Integer convertToInteger(Tre tre, String fieldName) {
         String value = TreUtility.getTreValue(tre, fieldName);
-        if (value != null) {
+        if (StringUtils.isNotEmpty(value)) {
             return Integer.valueOf(value);
         } else {
             return null;
@@ -81,7 +83,7 @@ public final class TreUtility {
     @Nullable
     public static Float convertToFloat(Tre tre, String fieldName) {
         String value = TreUtility.getTreValue(tre, fieldName);
-        if (value != null) {
+        if (StringUtils.isNotEmpty(value)) {
             return Float.valueOf(value);
         } else {
             return null;
@@ -101,7 +103,7 @@ public final class TreUtility {
     @Nullable
     public static Date convertToDate(Tre tre, String fieldName) {
         String value = TreUtility.getTreValue(tre, fieldName);
-        if (value != null) {
+        if (StringUtils.isNotEmpty(value)) {
             try {
                 return DATE_FORMATTER.parse(value);
             } catch (ParseException e) {

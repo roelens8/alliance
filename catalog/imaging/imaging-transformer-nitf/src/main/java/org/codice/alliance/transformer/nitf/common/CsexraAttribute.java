@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import javax.measure.converter.MultiplyConverter;
 import javax.measure.converter.UnitConverter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
@@ -343,7 +344,7 @@ public class CsexraAttribute extends NitfAttributeImpl<Tre> {
 
         Serializable value = TreUtility.getTreValue(tre, PREDICTED_NIIRS_SHORT_NAME);
 
-        if (value instanceof String) {
+        if (value instanceof String && StringUtils.isNotEmpty((String) value)) {
             return parseNiirs((String) value);
         }
 
@@ -360,6 +361,7 @@ public class CsexraAttribute extends NitfAttributeImpl<Tre> {
         return tre -> Optional.ofNullable(TreUtility.getTreValue(tre, SNOW_DEPTH_CAT_SHORT_NAME))
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
+                .filter(StringUtils::isNotEmpty)
                 .map(Integer::valueOf)
                 .map(CsexraAttribute::convertSnowDepthCat)
                 .map(pair -> pair.map(pairFunction)
