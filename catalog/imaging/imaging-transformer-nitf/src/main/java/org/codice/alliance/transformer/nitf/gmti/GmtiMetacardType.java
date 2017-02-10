@@ -13,23 +13,7 @@
  */
 package org.codice.alliance.transformer.nitf.gmti;
 
-import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
-import org.codice.alliance.catalog.core.api.impl.types.SecurityAttributes;
 import org.codice.alliance.transformer.nitf.AbstractNitfMetacardType;
-import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
-import org.codice.alliance.transformer.nitf.common.CsdidaAttribute;
-import org.codice.alliance.transformer.nitf.common.CsexraAttribute;
-import org.codice.alliance.transformer.nitf.common.HistoaAttribute;
-import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
-import org.codice.alliance.transformer.nitf.common.PiaimcAttribute;
-
-import ddf.catalog.data.impl.types.AssociationsAttributes;
-import ddf.catalog.data.impl.types.ContactAttributes;
-import ddf.catalog.data.impl.types.CoreAttributes;
-import ddf.catalog.data.impl.types.DateTimeAttributes;
-import ddf.catalog.data.impl.types.LocationAttributes;
-import ddf.catalog.data.impl.types.MediaAttributes;
-import ddf.catalog.data.impl.types.ValidationAttributes;
 
 public class GmtiMetacardType extends AbstractNitfMetacardType {
     private static final String NAME = "isr.gmti";
@@ -41,22 +25,5 @@ public class GmtiMetacardType extends AbstractNitfMetacardType {
 
     @Override
     public void initDescriptors() {
-        descriptors.addAll(getDescriptors(NitfHeaderAttribute.getAttributes()));
-        descriptors.addAll(getDescriptors(AcftbAttribute.getAttributes()));
-        descriptors.addAll(getDescriptors(IndexedMtirpbAttribute.getAttributes()));
-        descriptors.addAll(getDescriptors(MtirpbAttribute.getAttributes()));
-        descriptors.addAll(new CoreAttributes().getAttributeDescriptors());
-        descriptors.addAll(new AssociationsAttributes().getAttributeDescriptors());
-        descriptors.addAll(new ContactAttributes().getAttributeDescriptors());
-        descriptors.addAll(new MediaAttributes().getAttributeDescriptors());
-        descriptors.addAll(new DateTimeAttributes().getAttributeDescriptors());
-        descriptors.addAll(new LocationAttributes().getAttributeDescriptors());
-        descriptors.addAll(new ValidationAttributes().getAttributeDescriptors());
-        descriptors.addAll(new IsrAttributes().getAttributeDescriptors());
-        descriptors.addAll(new SecurityAttributes().getAttributeDescriptors());
-        descriptors.addAll(getDescriptors(PiaimcAttribute.getAttributes()));
-        descriptors.addAll(getDescriptors(CsdidaAttribute.getAttributes()));
-        descriptors.addAll(getDescriptors(CsexraAttribute.getAttributes()));
-        descriptors.addAll(getDescriptors(HistoaAttribute.getAttributes()));
     }
 }

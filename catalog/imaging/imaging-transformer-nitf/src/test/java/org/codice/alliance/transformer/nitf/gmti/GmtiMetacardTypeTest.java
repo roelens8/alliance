@@ -22,11 +22,13 @@ import org.codice.alliance.catalog.core.api.impl.types.IsrAttributes;
 import org.codice.alliance.catalog.core.api.impl.types.SecurityAttributes;
 import org.codice.alliance.transformer.nitf.AbstractNitfMetacardType;
 import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
+import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
 import org.codice.alliance.transformer.nitf.common.CsdidaAttribute;
 import org.codice.alliance.transformer.nitf.common.CsexraAttribute;
 import org.codice.alliance.transformer.nitf.common.HistoaAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
 import org.codice.alliance.transformer.nitf.common.PiaimcAttribute;
+import org.codice.alliance.transformer.nitf.common.PiatgbAttribute;
 import org.junit.Test;
 
 import ddf.catalog.data.AttributeDescriptor;
@@ -43,9 +45,10 @@ public class GmtiMetacardTypeTest {
     @Test
     public void testGmtiAttributes() {
         GmtiMetacardType gmtiCardType = new GmtiMetacardType();
-        Set<AttributeDescriptor> descriptors =
-                AbstractNitfMetacardType.getDescriptors(NitfHeaderAttribute.getAttributes());
+        Set<AttributeDescriptor> descriptors = AbstractNitfMetacardType.getDescriptors(
+                NitfHeaderAttribute.getAttributes());
         descriptors.addAll(AbstractNitfMetacardType.getDescriptors(AcftbAttribute.getAttributes()));
+        descriptors.addAll(AbstractNitfMetacardType.getDescriptors(AimidbAttribute.getAttributes()));
         descriptors.addAll(AbstractNitfMetacardType.getDescriptors(IndexedMtirpbAttribute.getAttributes()));
         descriptors.addAll(AbstractNitfMetacardType.getDescriptors(MtirpbAttribute.getAttributes()));
         descriptors.addAll(new CoreAttributes().getAttributeDescriptors());
@@ -61,6 +64,7 @@ public class GmtiMetacardTypeTest {
         descriptors.addAll(AbstractNitfMetacardType.getDescriptors(CsdidaAttribute.getAttributes()));
         descriptors.addAll(AbstractNitfMetacardType.getDescriptors(CsexraAttribute.getAttributes()));
         descriptors.addAll(AbstractNitfMetacardType.getDescriptors(HistoaAttribute.getAttributes()));
+        descriptors.addAll(AbstractNitfMetacardType.getDescriptors(PiatgbAttribute.getAttributes()));
         assertThat(gmtiCardType.getAttributeDescriptors(),
                 containsInAnyOrder(descriptors.toArray(new AttributeDescriptor[descriptors.size()])));
     }

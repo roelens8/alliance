@@ -26,7 +26,8 @@ public enum TreDescriptor {
     CSEXRA(CsexraAttribute.getAttributes()),
     PIAIMC(PiaimcAttribute.getAttributes()),
     CSDIDA(CsdidaAttribute.getAttributes()),
-    HISTOA(HistoaAttribute.getAttributes());
+    HISTOA(HistoaAttribute.getAttributes()),
+    PIATGB(PiatgbAttribute.getAttributes());
 
     private List<NitfAttribute<Tre>> nitfAttributes;
 

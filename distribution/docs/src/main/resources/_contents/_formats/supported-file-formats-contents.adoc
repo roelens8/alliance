@@ -99,6 +99,18 @@ ${branding} has the capability to extract ISR-specific metadata from supported f
 ** `ext.nitf.piaimc.satellite-track-path`
 ** `ext.nitf.piaimc.satellite-track-row`
 
+* NITF Profile For Imagery Access Target (PIATGB) Extended Attributes
+** `ext.nitf.piatgb.target-utm`
+** `ext.nitf.piatgb.target-identification`
+** `ext.nitf.piatgb.country-code`
+** `ext.nitf.piatgb.category-code`
+** `ext.nitf.piatgb.target-geographic-coordinates`
+** `ext.nitf.piatgb.target-coordinate-datum`
+** `ext.nitf.piatgb.target-name`
+** `ext.nitf.piatgb.percentage-of-coverage`
+** `ext.nitf.piatgb.target-latitude`
+** `ext.nitf.piatgb.target-longitude`
+
 * NITF Moving Target Indiciator Report (MTIRPB) Extended Attributes
 ** `ext.nitf.mtirpb.target-classification-category`
 ** `ext.nitf.mtirpb.target-amplitude`

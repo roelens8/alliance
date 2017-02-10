@@ -55,6 +55,7 @@ import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderTransformer;
+import org.codice.alliance.transformer.nitf.common.PiatgbAttribute;
 import org.codice.imaging.nitf.core.common.DateTime;
 import org.codice.imaging.nitf.core.common.FileType;
 import org.codice.imaging.nitf.core.common.NitfFormatException;
@@ -395,6 +396,48 @@ public class ImageInputTransformerTest {
             nitfFile.delete();
         }
 
+    }
+
+    private static void createNitfWithPiatgb(File file) {
+        NitfHeader header = NitfHeaderFactory.getDefault(FileType.NITF_TWO_ONE);
+        Tre piatgb = TreFactory.getDefault("PIATGB", TreSource.ImageExtendedSubheaderData);
+        piatgb.add(new TreEntry("TGTUTM", "55HFA9359093610", "string"));
+        piatgb.add(new TreEntry("PIATGAID", "ABCDEFGHIJUVWXY", "string"));
+        piatgb.add(new TreEntry("PIACTRY", "AS", "string"));
+        piatgb.add(new TreEntry("PIACAT", "702XX", "string"));
+        piatgb.add(new TreEntry("TGTGEO", "351655S1490742E", "string"));
+        piatgb.add(new TreEntry("DATUM", "WGE", "string"));
+        piatgb.add(new TreEntry("TGTNAME", "Canberra Hill                         ", "string"));
+        piatgb.add(new TreEntry("PERCOVER", "57", "UINT"));
+        piatgb.add(new TreEntry("TGTLAT", "-35.30812 ", "float"));
+        piatgb.add(new TreEntry("TGTLON", "+149.12447 ", "float"));
+
+        ImageSegment imageSegment = ImageSegmentFactory.getDefault(FileType.NITF_TWO_ONE);
+        imageSegment.addImageBand(new ImageBand());
+
+        imageSegment.getTREsRawStructure()
+                .add(piatgb);
+        new NitfCreationFlow().fileHeader(() -> header)
+                .imageSegment(() -> imageSegment)
+                .write(file.getAbsolutePath());
+    }
+
+    @Test
+    public void testPiatgb() throws IOException, NitfFormatException {
+        File nitfFile = File.createTempFile("nitf-", ".ntf");
+        try {
+            createNitfWithPiatgb(nitfFile);
+
+            try (InputStream inputStream = new FileInputStream(nitfFile)) {
+                Metacard metacard = metacardFactory.createMetacard("piatgbTest");
+                NitfSegmentsFlow nitfSegmentsFlow = new NitfParserAdapter().parseNitf(inputStream);
+                transformer.transform(nitfSegmentsFlow, metacard);
+                assertThat(metacard.getAttribute(PiatgbAttribute.TARGET_NAME_ATTRIBUTE.getLongName())
+                        .getValue(), is("Canberra Hill"));
+            }
+        } finally {
+            nitfFile.delete();
+        }
     }
 
     @Test

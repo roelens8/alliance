@@ -11,12 +11,11 @@
  * is distributed along with this program and can be found at
  * <http://www.gnu.org/licenses/lgpl.html>.
  */
-package org.codice.alliance.transformer.nitf;
+package org.codice.alliance.transformer.nitf.common;
 
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
 import org.codice.imaging.nitf.core.common.NitfFormatException;
 import org.junit.Test;
 
