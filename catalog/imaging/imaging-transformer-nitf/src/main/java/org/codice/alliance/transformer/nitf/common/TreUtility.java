@@ -15,6 +15,7 @@ package org.codice.alliance.transformer.nitf.common;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -24,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.codice.imaging.nitf.core.common.NitfFormatException;
 import org.codice.imaging.nitf.core.tre.Tre;
+import org.codice.imaging.nitf.core.tre.TreEntry;
 import org.codice.imaging.nitf.core.tre.TreGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,20 @@ public final class TreUtility {
             }
 
             return value;
+        } catch (NitfFormatException e) {
+            LOGGER.debug(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static List<TreGroup> getTreGroups(TreGroup tre, String entry) {
+        try {
+            TreEntry treEntry = tre.getEntry(entry);
+            if (treEntry != null) {
+                return treEntry.getGroups();
+            }
         } catch (NitfFormatException e) {
             LOGGER.debug(e.getMessage(), e);
         }

@@ -26,6 +26,7 @@ import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfAttributeImpl;
 import org.codice.alliance.transformer.nitf.common.TreUtility;
 import org.codice.imaging.nitf.core.tre.Tre;
+import org.codice.imaging.nitf.core.tre.TreGroup;
 
 import ddf.catalog.data.AttributeDescriptor;
 import ddf.catalog.data.AttributeType;
@@ -62,6 +63,8 @@ public class MtirpbAttribute extends NitfAttributeImpl<Tre> {
     public static final String WIDE_AREA_MTI_FRAME_NUMBER = PREFIX + "wide-area-mti-frame-number";
 
     public static final String WIDE_AREA_MTI_BAR_NUMBER = PREFIX + "wide-area-mti-bar-number";
+
+    public static final String TARGETS = PREFIX + "targets";
 
     /*
      * Normalized attributes. These taxonomy terms will be duplicated by `ext.nitf.mtirpb.*` when
@@ -143,9 +146,22 @@ public class MtirpbAttribute extends NitfAttributeImpl<Tre> {
             tre -> TreUtility.getTreValue(tre, "WAMTI_BAR_NO"),
             BasicTypes.STRING_TYPE);
 
+    public static final MtirpbAttribute TARGETS_ATTRIBUTE = new MtirpbAttribute(TARGETS,
+            "TARGETS",
+            tre -> TreUtility.getTreValue(tre, "TARGETS"),
+            BasicTypes.STRING_TYPE,
+            IndexedMtirpbAttribute.getAttributes());
+
     private MtirpbAttribute(String longName, String shortName,
             Function<Tre, Serializable> accessorFunction, AttributeType attributeType) {
         super(longName, shortName, accessorFunction, attributeType);
+        ATTRIBUTES.add(this);
+    }
+
+    private MtirpbAttribute(String longName, String shortName,
+            Function<Tre, Serializable> accessorFunction, AttributeType attributeType,
+            List<NitfAttribute<TreGroup>> indexedAttributes) {
+        super(longName, shortName, accessorFunction, attributeType, indexedAttributes);
         ATTRIBUTES.add(this);
     }
 
