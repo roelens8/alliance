@@ -111,6 +111,20 @@ ${branding} has the capability to extract ISR-specific metadata from supported f
 ** `ext.nitf.piatgb.target-latitude`
 ** `ext.nitf.piatgb.target-longitude`
 
+* NITF Profile For Imagery Access Product (PIAPRD) Extended Attributes
+** `ext.nitf.piaprd.access-id`
+** `ext.nitf.piaprd.fm-control-number`
+** `ext.nitf.piaprd.subjective-detail`
+** `ext.nitf.piaprd.product-code`
+** `ext.nitf.piaprd.producer-supplement`
+** `ext.nitf.piaprd.product-id-number`
+** `ext.nitf.piaprd.product-short-name`
+** `ext.nitf.piaprd.producer-code`
+** `ext.nitf.piaprd.producer-create-time`
+** `ext.nitf.piaprd.map-id`
+** `ext.nitf.piaprd.keyword-repetitions`
+** `ext.nitf.piaprd.keyword`
+
 * NITF Moving Target Indiciator Report (MTIRPB) Extended Attributes
 ** `ext.nitf.mtirpb.target-classification-category`
 ** `ext.nitf.mtirpb.target-amplitude`

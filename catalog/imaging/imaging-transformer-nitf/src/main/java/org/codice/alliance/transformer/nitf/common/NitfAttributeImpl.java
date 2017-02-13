@@ -16,11 +16,13 @@ package org.codice.alliance.transformer.nitf.common;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.lang.StringUtils;
 import org.codice.alliance.transformer.nitf.ExtNitfUtility;
+import org.codice.imaging.nitf.core.tre.TreGroup;
 
 import ddf.catalog.data.AttributeDescriptor;
 import ddf.catalog.data.AttributeType;
@@ -36,14 +38,15 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
 
     private Set<AttributeDescriptor> attributeDescriptors;
 
+    private List<NitfAttribute<TreGroup>> indexedAttributes;
+
     protected NitfAttributeImpl(String extNitfName, String shortName,
             Function<T, Serializable> accessorFunction, AttributeType attributeType) {
         this.shortName = shortName;
         this.longName = extNitfName;
         this.accessorFunction = accessorFunction;
         // retrieving metacard attribute descriptor for this attribute to prevent later lookups
-        this.attributeDescriptors = Collections.singleton(new AttributeDescriptorImpl(
-                longName,
+        this.attributeDescriptors = Collections.singleton(new AttributeDescriptorImpl(longName,
                 true, /* indexed */
                 true, /* stored */
                 false, /* tokenized */
@@ -61,8 +64,24 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
         this.attributeDescriptors.add(attributeDescriptor);
         if (StringUtils.isNotEmpty(extNitfName)) {
             this.attributeDescriptors.add(ExtNitfUtility.createDuplicateDescriptorAndRename(
-                    extNitfName, attributeDescriptor));
+                    extNitfName,
+                    attributeDescriptor));
         }
+    }
+
+    protected NitfAttributeImpl(String extNitfName, String shortName,
+            Function<T, Serializable> accessorFunction, AttributeType attributeType,
+            List<NitfAttribute<TreGroup>> indexedAttributes) {
+        this(extNitfName, shortName, accessorFunction, attributeType);
+        this.indexedAttributes = indexedAttributes;
+    }
+
+    protected NitfAttributeImpl(final String attributeName, final String shortName,
+            final Function<T, Serializable> accessorFunction,
+            AttributeDescriptor attributeDescriptor, String extNitfName,
+            List<NitfAttribute<TreGroup>> indexedAttributes) {
+        this(attributeName, shortName, accessorFunction, attributeDescriptor, extNitfName);
+        this.indexedAttributes = indexedAttributes;
     }
 
     @Override
@@ -88,5 +107,9 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
     @Override
     public String toString() {
         return getLongName();
+    }
+
+    public List<NitfAttribute<TreGroup>> getIndexedAttributes() {
+        return indexedAttributes;
     }
 }

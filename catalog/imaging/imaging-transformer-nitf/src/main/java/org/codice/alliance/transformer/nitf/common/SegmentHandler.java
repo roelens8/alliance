@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import org.codice.imaging.nitf.core.common.TaggedRecordExtensionHandler;
 import org.codice.imaging.nitf.core.tre.Tre;
+import org.codice.imaging.nitf.core.tre.TreGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +53,29 @@ public class SegmentHandler {
 
         tres.forEach(tre -> Optional.ofNullable(TreDescriptor.forName(tre.getName()
                 .trim()))
-                .ifPresent(treDescriptor -> handleSegmentHeader(metacard,
-                        tre,
-                        treDescriptor.getValues())));
+                .ifPresent(treDescriptor -> handleTre(metacard, tre, treDescriptor.getValues())));
+    }
+
+    private <T> void handleTre(Metacard metacard, Tre tre, List<NitfAttribute<T>> treValues) {
+        treValues.forEach(attribute -> handleTreValues(metacard, attribute, tre));
+    }
+
+    private void handleTreValues(Metacard metacard, NitfAttribute attribute, Tre tre) {
+        NitfAttributeImpl treAttribute = (NitfAttributeImpl) attribute;
+        List<NitfAttribute<TreGroup>> indexedAttributes = treAttribute.getIndexedAttributes();
+        if (indexedAttributes != null && !indexedAttributes.isEmpty()) {
+            List<TreGroup> treGroups = TreUtility.getTreGroups(tre, attribute.getShortName());
+            if (treGroups != null) {
+                treGroups.forEach(treGroup -> handleSegmentHeader(metacard,
+                        treGroup,
+                        indexedAttributes));
+            }
+        }
+        handleValue(metacard, attribute, tre);
     }
 
     private <T> void handleValue(Metacard metacard, NitfAttribute attribute, T segment) {
+
         Function<T, Serializable> accessor = attribute.getAccessorFunction();
         Serializable value = accessor.apply(segment);
 

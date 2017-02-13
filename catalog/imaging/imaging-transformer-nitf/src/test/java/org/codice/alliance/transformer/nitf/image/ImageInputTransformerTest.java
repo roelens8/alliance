@@ -52,9 +52,11 @@ import org.codice.alliance.transformer.nitf.MetacardFactory;
 import org.codice.alliance.transformer.nitf.NitfParserAdapter;
 import org.codice.alliance.transformer.nitf.TreTestUtility;
 import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
+import org.codice.alliance.transformer.nitf.common.IndexedPiaprdAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderTransformer;
+import org.codice.alliance.transformer.nitf.common.PiaprdAttribute;
 import org.codice.alliance.transformer.nitf.common.PiatgbAttribute;
 import org.codice.imaging.nitf.core.common.DateTime;
 import org.codice.imaging.nitf.core.common.FileType;
@@ -67,6 +69,7 @@ import org.codice.imaging.nitf.core.image.ImageSegmentFactory;
 import org.codice.imaging.nitf.core.tre.Tre;
 import org.codice.imaging.nitf.core.tre.TreEntry;
 import org.codice.imaging.nitf.core.tre.TreFactory;
+import org.codice.imaging.nitf.core.tre.TreGroup;
 import org.codice.imaging.nitf.core.tre.TreSource;
 import org.codice.imaging.nitf.fluent.NitfCreationFlow;
 import org.codice.imaging.nitf.fluent.NitfParserInputFlow;
@@ -247,6 +250,120 @@ public class ImageInputTransformerTest {
 
             try (InputStream inputStream = new FileInputStream(nitfFile)) {
                 Metacard metacard = metacardFactory.createMetacard("aimidbTest");
+                NitfSegmentsFlow nitfSegmentsFlow = new NitfParserAdapter().parseNitf(inputStream);
+                headerTransformer.transform(nitfSegmentsFlow, metacard);
+                transformer.transform(nitfSegmentsFlow, metacard);
+                assertAttributesMap(metacard, treMap);
+            }
+        } finally {
+            nitfFile.delete();
+        }
+    }
+
+    private static Map<NitfAttribute, Object> createNitfWithPiaprd(File file)
+            throws NitfFormatException {
+        String accessId = "THIS IS AN IPA FILE.                                       -END-";
+        String keyword = "FIRST                                                             "
+                + "                                                        "
+                + "                                                        "
+                + "                                                        "
+                + "                -END-";
+
+        Tre piaprd = TreFactory.getDefault("PIAPRD", TreSource.ImageExtendedSubheaderData);
+        piaprd.add(new TreEntry("ACCESSID", accessId, "string"));
+        piaprd.add(new TreEntry("FMCONTROL", "PXX                        -END-", "string"));
+        piaprd.add(new TreEntry("SUBDET", "P", "string"));
+        piaprd.add(new TreEntry("PRODCODE", "YY", "string"));
+        piaprd.add(new TreEntry("PRODUCERSE", "UNKNOW", "string"));
+        piaprd.add(new TreEntry("PRODIDNO", "X211           -END-", "string"));
+        piaprd.add(new TreEntry("PRODSNME", "JUNK FILE.", "string"));
+        piaprd.add(new TreEntry("PRODUCERCD", "27", "string"));
+        piaprd.add(new TreEntry("PRODCRTIME", "26081023ZOCT95", "string"));
+        piaprd.add(new TreEntry("MAPID", "132                                -END-", "string"));
+        piaprd.add(new TreEntry("SECTITLEREP", "01", "UINT"));
+        TreEntry secTitleEntry = new TreEntry("SECTITLE", null, "string");
+        TreGroup secTitleGroup = TreFactory.getDefault("SECTITLE",
+                TreSource.ImageExtendedSubheaderData);
+        secTitleGroup.getEntries()
+                .add(0,
+                        new TreEntry("SECTITLE",
+                                "                                   -END-",
+                                "string"));
+        secTitleGroup.getEntries()
+                .add(1, new TreEntry("PPNUM", "32/47", "string"));
+        secTitleGroup.getEntries()
+                .add(2, new TreEntry("TPP", "001", "UINT"));
+        secTitleEntry.initGroups();
+        secTitleEntry.addGroup(secTitleGroup);
+        piaprd.add(secTitleEntry);
+        piaprd.add(new TreEntry("REQORGREP", "01", "UINT"));
+        TreEntry reqorgEntry = new TreEntry("REQORG", null, "string");
+        TreGroup reqorgGroup = TreFactory.getDefault("REQORG",
+                TreSource.ImageExtendedSubheaderData);
+        reqorgGroup.getEntries()
+                .add(0,
+                        new TreEntry("REQORG",
+                                "FIRST                                                      -END-",
+                                "string"));
+        reqorgEntry.initGroups();
+        reqorgEntry.addGroup(reqorgGroup);
+        piaprd.add(reqorgEntry);
+        piaprd.add(new TreEntry("KEYWORDREP", "01", "UINT"));
+        TreEntry keywordEntry = new TreEntry("KEYWORD", null, "string");
+        TreGroup keywordGroup = TreFactory.getDefault("KEYWORD",
+                TreSource.ImageExtendedSubheaderData);
+        keywordGroup.getEntries()
+                .add(0, new TreEntry("KEYWORD", keyword, "string"));
+        keywordEntry.initGroups();
+        keywordEntry.addGroup(keywordGroup);
+        piaprd.add(keywordEntry);
+        piaprd.add(new TreEntry("ASSRPTREP", "01", "UNIT"));
+        TreEntry assrptEntry = new TreEntry("ASSRPT", null, "string");
+        TreGroup asserptGroup = TreFactory.getDefault("ASSRPT",
+                TreSource.ImageExtendedSubheaderData);
+        asserptGroup.getEntries()
+                .add(0, new TreEntry("ASSRPT", "FIRST          -END-", "string"));
+        assrptEntry.initGroups();
+        assrptEntry.addGroup(asserptGroup);
+        piaprd.add(assrptEntry);
+        piaprd.add(new TreEntry("ATEXTREP", "01", "UINT"));
+        TreEntry atextEntry = new TreEntry("ATEXT", null, "string");
+        TreGroup atextGroup = TreFactory.getDefault("ATEXT", TreSource.ImageExtendedSubheaderData);
+        atextGroup.getEntries()
+                .add(0,
+                        new TreEntry("ATEXT",
+                                "FIRST                                                             "
+                                        + "                                                        "
+                                        + "                                                        "
+                                        + "                                                        "
+                                        + "                -END-",
+                                "string"));
+        atextEntry.initGroups();
+        atextEntry.addGroup(atextGroup);
+        piaprd.add(atextEntry);
+
+        ImageSegment imageSegment = TreTestUtility.createImageSegment();
+        imageSegment.getTREsRawStructure()
+                .add(piaprd);
+        new NitfCreationFlow().fileHeader(() -> TreTestUtility.createFileHeader())
+                .imageSegment(() -> imageSegment)
+                .write(file.getAbsolutePath());
+
+        // key value pair of nitf attributes and expected getAttributes
+        Map<NitfAttribute, Object> assertMap = new HashMap<>();
+        assertMap.put(PiaprdAttribute.ACCESS_ID_ATTRIBUTE, accessId);
+        assertMap.put(IndexedPiaprdAttribute.KEYWORD_ATTRIBUTE, keyword);
+        return assertMap;
+    }
+
+    @Test
+    public void testPiaprd() throws IOException, NitfFormatException {
+        File nitfFile = File.createTempFile("nitf-", ".ntf");
+        try {
+            Map<NitfAttribute, Object> treMap = createNitfWithPiaprd(nitfFile);
+
+            try (InputStream inputStream = new FileInputStream(nitfFile)) {
+                Metacard metacard = metacardFactory.createMetacard("piaprdTest");
                 NitfSegmentsFlow nitfSegmentsFlow = new NitfParserAdapter().parseNitf(inputStream);
                 headerTransformer.transform(nitfSegmentsFlow, metacard);
                 transformer.transform(nitfSegmentsFlow, metacard);

@@ -22,11 +22,12 @@ import org.codice.imaging.nitf.core.tre.Tre;
 public enum TreDescriptor {
     ACFTB(AcftbAttribute.getAttributes()),
     AIMIDB(AimidbAttribute.getAttributes()),
-    MTIRPB(MtirpbAttribute.getAttributes()),
     CSEXRA(CsexraAttribute.getAttributes()),
-    PIAIMC(PiaimcAttribute.getAttributes()),
     CSDIDA(CsdidaAttribute.getAttributes()),
     HISTOA(HistoaAttribute.getAttributes()),
+    MTIRPB(MtirpbAttribute.getAttributes()),
+    PIAIMC(PiaimcAttribute.getAttributes()),
+    PIAPRD(PiaprdAttribute.getAttributes()),
     PIATGB(PiatgbAttribute.getAttributes());
 
     private List<NitfAttribute<Tre>> nitfAttributes;

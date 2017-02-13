@@ -14,16 +14,11 @@
 package org.codice.alliance.transformer.nitf.gmti;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.codice.alliance.transformer.nitf.common.SegmentHandler;
-import org.codice.imaging.nitf.core.common.NitfFormatException;
-import org.codice.imaging.nitf.core.common.TaggedRecordExtensionHandler;
-import org.codice.imaging.nitf.core.tre.Tre;
-import org.codice.imaging.nitf.core.tre.TreGroup;
 import org.codice.imaging.nitf.fluent.NitfSegmentsFlow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,37 +61,10 @@ public class NitfGmtiTransformer extends SegmentHandler {
             throw new IllegalArgumentException("argument 'metacard' may not be null.");
         }
 
-        nitfSegmentsFlow.fileHeader(header -> handleHeader(header, metacard))
-                .end();
-
         transformTargetLocation(metacard);
         transformAircraftLocation(metacard);
 
         return metacard;
-    }
-
-    private void handleHeader(TaggedRecordExtensionHandler header, Metacard metacard) {
-        List<Tre> tres = header.getTREsRawStructure()
-                .getTREs();
-
-        handleTres(metacard, header);
-
-        tres.stream()
-                .filter(tre -> MTIRPB.equals(tre.getName()
-                        .trim()))
-                .forEach(tre -> {
-                    try {
-                        List<TreGroup> targets = tre.getEntry(TARGETS)
-                                .getGroups();
-
-                        targets.forEach(group -> handleSegmentHeader(metacard,
-                                group,
-                                IndexedMtirpbAttribute.getAttributes()));
-                    } catch (NitfFormatException e) {
-                        LOGGER.debug(
-                                "Could not parse NITF target information: {} " + e.getMessage(), e);
-                    }
-                });
     }
 
     private void transformTargetLocation(Metacard metacard) {
@@ -172,11 +140,12 @@ public class NitfGmtiTransformer extends SegmentHandler {
     }
 
     private String formatAircraftLocation(Metacard metacard) {
-        Attribute aircraftLocation = MtirpbAttribute.AIRCRAFT_LOCATION_ATTRIBUTE.getAttributeDescriptors()
-                .stream()
-                .map(descriptor -> metacard.getAttribute(descriptor.getName()))
-                .findFirst()
-                .orElse(null);
+        Attribute aircraftLocation =
+                MtirpbAttribute.AIRCRAFT_LOCATION_ATTRIBUTE.getAttributeDescriptors()
+                        .stream()
+                        .map(descriptor -> metacard.getAttribute(descriptor.getName()))
+                        .findFirst()
+                        .orElse(null);
 
         if (aircraftLocation != null && StringUtils.isNotEmpty(aircraftLocation.getValue()
                 .toString())) {
