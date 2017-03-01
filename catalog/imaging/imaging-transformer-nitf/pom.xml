@@ -103,7 +103,7 @@
             <artifactId>jai-imageio-core</artifactId>
             <version>${jai-imageio-core.version}</version>
         </dependency>
-            
+
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-jpeg2000</artifactId>
@@ -135,18 +135,18 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Embed-Dependency>
-                            thumbnailator,
                             catalog-core-api-impl,
                             platform-util,
-                            codice-imaging-nitf-core,
-                            codice-imaging-nitf-render,
-                            codice-imaging-nitf-fluent-api,
-                            jai-imageio-core,
+                            commons-lang3,
+                            thumbnailator,
                             jai-imageio-jpeg2000,
-                            commons-lang3
+                            jai-imageio-core
                         </Embed-Dependency>
                         <Export-Package/>
-                        <Import-Package>!sun.security.action,*</Import-Package>
+                        <Import-Package>
+                            !sun.security.action,
+                            *
+                        </Import-Package>
                     </instructions>
                 </configuration>
             </plugin>
