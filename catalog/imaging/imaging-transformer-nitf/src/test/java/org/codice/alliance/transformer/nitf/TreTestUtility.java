@@ -13,13 +13,18 @@
  */
 package org.codice.alliance.transformer.nitf;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.function.Consumer;
 
+import org.codice.alliance.transformer.nitf.common.TreUtility;
 import org.codice.imaging.nitf.core.common.DateTime;
 import org.codice.imaging.nitf.core.common.FileType;
 import org.codice.imaging.nitf.core.common.NitfFormatException;
@@ -45,12 +50,62 @@ import org.codice.imaging.nitf.core.tre.TreGroup;
 import org.codice.imaging.nitf.core.tre.TreSource;
 import org.codice.imaging.nitf.core.tre.impl.TreCollectionImpl;
 import org.codice.imaging.nitf.core.tre.impl.TreEntryImpl;
+import org.codice.imaging.nitf.core.tre.impl.TreFactory;
 import org.codice.imaging.nitf.fluent.impl.NitfCreationFlowImpl;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TreTestUtility {
     private static final Logger LOGGER = LoggerFactory.getLogger(TreTestUtility.class);
+
+    @Test
+    public void testConvertToFloat() throws NitfFormatException, IOException {
+        Tre tre = TreFactory.getDefault("TestTre", TreSource.ImageExtendedSubheaderData);
+        tre.add(new TreEntryImpl("FLOAT_VALID_1", "+123.456e2", "float"));
+        tre.add(new TreEntryImpl("FLOAT_VALID_2", "-123", "float"));
+        tre.add(new TreEntryImpl("FLOAT_VALID_3", "0x1FFF.0p0", "float"));
+        tre.add(new TreEntryImpl("FLOAT_VALID_4", "0009.9000", "float"));
+        tre.add(new TreEntryImpl("FLOAT_VALID_5", "-0009.9000", "float"));
+
+        tre.add(new TreEntryImpl("FLOAT_INVALID_1", "0D2310", "float"));
+        tre.add(new TreEntryImpl("FLOAT_INVALID_2", "-0w.D3", "float"));
+        tre.add(new TreEntryImpl("FLOAT_INVALID_3", "-+0x1FFF.0p0", "float"));
+        tre.add(new TreEntryImpl("FLOAT_INVALID_4", "12367.0x0FF", "float"));
+        tre.add(new TreEntryImpl("FLOAT_INVALID_5", "1,0", "float"));
+
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_VALID_1"), is(12345.6f));
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_VALID_2"), is(-123.0f));
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_VALID_3"), is(8191.0f));
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_VALID_4"), is(9.9f));
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_VALID_5"), is(-9.9f));
+
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_INVALID_1"), nullValue());
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_INVALID_2"), nullValue());
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_INVALID_3"), nullValue());
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_INVALID_4"), nullValue());
+        assertThat(TreUtility.convertToFloat(tre, "FLOAT_INVALID_5"), nullValue());
+    }
+
+    @Test
+    public void testConvertToInteger() throws NitfFormatException, IOException {
+        Tre tre = TreFactory.getDefault("TestTre", TreSource.ImageExtendedSubheaderData);
+        tre.add(new TreEntryImpl("INTEGER_VALID_1", "12345", "UINT"));
+        tre.add(new TreEntryImpl("INTEGER_VALID_2", "-12345", "UINT"));
+        tre.add(new TreEntryImpl("INTEGER_VALID_3", "-0120", "UINT"));
+
+        tre.add(new TreEntryImpl("INTEGER_INVALID_1", "1.2", "UINT"));
+        tre.add(new TreEntryImpl("INTEGER_INVALID_2", "-1.3-9", "UINT"));
+        tre.add(new TreEntryImpl("INTEGER_INVALID_3", "ABCD", "UINT"));
+
+        assertThat(TreUtility.convertToInteger(tre, "INTEGER_VALID_1"), is(12345));
+        assertThat(TreUtility.convertToInteger(tre, "INTEGER_VALID_2"), is(-12345));
+        assertThat(TreUtility.convertToInteger(tre, "INTEGER_VALID_3"), is(-120));
+
+        assertThat(TreUtility.convertToInteger(tre, "INTEGER_INVALID_1"), nullValue());
+        assertThat(TreUtility.convertToInteger(tre, "INTEGER_INVALID_2"), nullValue());
+        assertThat(TreUtility.convertToInteger(tre, "INTEGER_INVALID_3"), nullValue());
+    }
 
     public static void createFileIfNecessary(String filename, Consumer<String> consumer) {
         File file = new File(filename);
@@ -120,7 +175,9 @@ public class TreTestUtility {
 
         for (int i = 0; i < fieldNames.length; i++) {
             accumulator.append(values[i]);
-            when(tre.getEntry(fieldNames[i])).thenReturn(new TreEntryImpl(fieldNames[i], values[i], "string"));
+            when(tre.getEntry(fieldNames[i])).thenReturn(new TreEntryImpl(fieldNames[i],
+                    values[i],
+                    "string"));
         }
 
         TreGroup targetsGroup = createTreGroup(accumulator);

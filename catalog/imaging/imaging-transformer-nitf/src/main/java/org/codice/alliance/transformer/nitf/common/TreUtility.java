@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -31,12 +32,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class TreUtility {
+
     static final String TRE_DATE_FORMAT = "yyyyMMddkkmmss";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TreUtility.class);
 
     private static final FastDateFormat DATE_FORMATTER = FastDateFormat.getInstance(TRE_DATE_FORMAT,
             TimeZone.getTimeZone("GMT"));
+
+    private static final String DIGITS_REGEX = "(\\p{Digit}+)";
+
+    private static final String HEX_DIGITS_REGEX = "(\\p{XDigit}+)";
+
+    private static final String EXP_REGEX = "[eE][+-]?" + DIGITS_REGEX;
+
+    private static final String FLOATING_POINT_REGEX =
+            ("[\\x00-\\x20]*[+-]?(NaN|Infinity|(((" + DIGITS_REGEX + "(\\.)?(" + DIGITS_REGEX
+                    + "?)(" + EXP_REGEX + ")?)|(\\.(" + DIGITS_REGEX + ")(" + EXP_REGEX
+                    + ")?)|(((0[xX]" + HEX_DIGITS_REGEX + "(\\.)?)|(0[xX]" + HEX_DIGITS_REGEX
+                    + "?(\\.)" + HEX_DIGITS_REGEX + "))[pP][+-]?" + DIGITS_REGEX
+                    + "))[fFdD]?))[\\x00-\\x20]*");
+
+    private static final Pattern FLOAT_PATTERN = Pattern.compile(FLOATING_POINT_REGEX);
+
+    private static final Pattern INTEGER_PATTERN = Pattern.compile("[+-]?\\d+");
 
     private TreUtility() {
     }
@@ -54,7 +73,6 @@ public final class TreUtility {
         } catch (NitfFormatException e) {
             LOGGER.debug(e.getMessage(), e);
         }
-
         return null;
     }
 
@@ -68,7 +86,6 @@ public final class TreUtility {
         } catch (NitfFormatException e) {
             LOGGER.debug(e.getMessage(), e);
         }
-
         return null;
     }
 
@@ -80,11 +97,11 @@ public final class TreUtility {
     @Nullable
     public static Integer convertToInteger(Tre tre, String fieldName) {
         String value = TreUtility.getTreValue(tre, fieldName);
-        if (StringUtils.isNotEmpty(value)) {
+        if (StringUtils.isNotEmpty(value) && INTEGER_PATTERN.matcher(value)
+                .matches()) {
             return Integer.valueOf(value);
-        } else {
-            return null;
         }
+        return null;
     }
 
     public static Optional<Integer> findIntValue(Tre tre, String tagName) {
@@ -99,11 +116,11 @@ public final class TreUtility {
     @Nullable
     public static Float convertToFloat(Tre tre, String fieldName) {
         String value = TreUtility.getTreValue(tre, fieldName);
-        if (StringUtils.isNotEmpty(value)) {
+        if (StringUtils.isNotEmpty(value) && FLOAT_PATTERN.matcher(value)
+                .matches()) {
             return Float.valueOf(value);
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Nullable
@@ -129,7 +146,6 @@ public final class TreUtility {
                         e);
             }
         }
-
         return null;
     }
 }
