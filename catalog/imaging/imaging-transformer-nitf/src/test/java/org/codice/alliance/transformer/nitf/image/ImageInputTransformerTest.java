@@ -57,6 +57,7 @@ import org.codice.alliance.transformer.nitf.NitfAttributeConverters;
 import org.codice.alliance.transformer.nitf.NitfTestCommons;
 import org.codice.alliance.transformer.nitf.TreUtilityTest;
 import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
+import org.codice.alliance.transformer.nitf.common.ExpltbAttribute;
 import org.codice.alliance.transformer.nitf.common.IndexedPiaprdAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
@@ -228,6 +229,65 @@ public class ImageInputTransformerTest {
 
       try (InputStream inputStream = new FileInputStream(nitfFile)) {
         Metacard metacard = metacardFactory.createMetacard("aimidbTest");
+        NitfSegmentsFlow nitfSegmentsFlow =
+            new NitfParserInputFlowImpl().inputStream(inputStream).headerOnly();
+        headerTransformer.transform(nitfSegmentsFlow, metacard);
+        transformer.transform(nitfSegmentsFlow, metacard);
+        assertAttributesMap(metacard, treMap);
+      }
+    } finally {
+      nitfFile.delete();
+    }
+  }
+
+  private static Map<NitfAttribute, Object> createNitfWithExpltb(File file) {
+    String angleToNorth = "150.001";
+    String angleToNorthAccuracy = "03.001";
+    String mode = "LBM";
+    String primeId = "aaaaaaaaaaaa";
+
+    Tre expltb = TreFactory.getDefault("EXPLTB", TreSource.ImageExtendedSubheaderData);
+    expltb.add(new TreEntryImpl("ANGLE_TO_NORTH", angleToNorth, "float"));
+    expltb.add(new TreEntryImpl("ANGLE_TO_NORTH_ACCY", angleToNorthAccuracy, "float"));
+    expltb.add(new TreEntryImpl("SQUINT_ANGLE", "-59.002", "float"));
+    expltb.add(new TreEntryImpl("SQUINT_ANGLE_ACCY", "44.002", "float"));
+    expltb.add(new TreEntryImpl("MODE", mode, "string"));
+    expltb.add(new TreEntryImpl("GRAZE_ANG", "50.00", "float"));
+    expltb.add(new TreEntryImpl("GRAZE_ANG_ACCY", "00.01", "float"));
+    expltb.add(new TreEntryImpl("SLOPE_ANG", "24.00", "float"));
+    expltb.add(new TreEntryImpl("POLAR", "HH", "UINT"));
+    expltb.add(new TreEntryImpl("NSAMP", "03333", "UINT"));
+    expltb.add(new TreEntryImpl("SEQ_NUM", "4", "string"));
+    expltb.add(new TreEntryImpl("PRIME_ID", primeId, "string"));
+    expltb.add(new TreEntryImpl("PRIME_BE", "bbbbbbbbbbbbbbb", "string"));
+    expltb.add(new TreEntryImpl("N_SEC", "11", "UINT"));
+    expltb.add(new TreEntryImpl("IPR", "22", "UINT"));
+    ImageSegment imageSegment = TreUtilityTest.createImageSegment();
+    imageSegment.getTREsRawStructure().add(expltb);
+
+    new NitfCreationFlowImpl()
+        .fileHeader(() -> TreUtilityTest.createFileHeader())
+        .imageSegment(() -> imageSegment)
+        .write(file.getAbsolutePath());
+
+    // key value pair of nitf attributes and expected getAttributes
+    Map<NitfAttribute, Object> assertMap = new HashMap<>();
+    assertMap.put(ExpltbAttribute.ANGLE_TO_NORTH_ATTRIBUTE, Float.parseFloat(angleToNorth));
+    assertMap.put(
+        ExpltbAttribute.ANGLE_TO_NORTH_ACCURACY_ATTRIBUTE, Float.parseFloat(angleToNorthAccuracy));
+    assertMap.put(ExpltbAttribute.MODE_ATTRIBUTE, mode);
+    assertMap.put(ExpltbAttribute.PRIME_ID_ATTRIBUTE, primeId);
+    return assertMap;
+  }
+
+  @Test
+  public void testExpltb() throws IOException, NitfFormatException {
+    File nitfFile = File.createTempFile("nitf-", ".ntf");
+    try {
+      Map<NitfAttribute, Object> treMap = createNitfWithExpltb(nitfFile);
+
+      try (InputStream inputStream = new FileInputStream(nitfFile)) {
+        Metacard metacard = metacardFactory.createMetacard("expltbTest");
         NitfSegmentsFlow nitfSegmentsFlow =
             new NitfParserInputFlowImpl().inputStream(inputStream).headerOnly();
         headerTransformer.transform(nitfSegmentsFlow, metacard);

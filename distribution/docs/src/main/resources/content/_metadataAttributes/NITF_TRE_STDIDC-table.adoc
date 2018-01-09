@@ -1,6 +1,6 @@
 :title: NITF Standard ID (STDIDC) TRE Attribute Mappings
 :type: subAppendix
-:order: 016
+:order: 017
 :parent: Format-specific Attribute Mappings
 :status: published
 :summary: NITF Standard ID (STDIDC) TRE Attribute Mappings.

@@ -31,6 +31,7 @@ import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
 import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
 import org.codice.alliance.transformer.nitf.common.CsdidaAttribute;
 import org.codice.alliance.transformer.nitf.common.CsexraAttribute;
+import org.codice.alliance.transformer.nitf.common.ExpltbAttribute;
 import org.codice.alliance.transformer.nitf.common.HistoaAttribute;
 import org.codice.alliance.transformer.nitf.common.IndexedPiaprdAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfAttribute;
@@ -69,6 +70,7 @@ public abstract class AbstractNitfMetacardType extends MetacardTypeImpl {
     descriptors.addAll(getDescriptors(AimidbAttribute.getAttributes()));
     descriptors.addAll(getDescriptors(CsdidaAttribute.getAttributes()));
     descriptors.addAll(getDescriptors(CsexraAttribute.getAttributes()));
+    descriptors.addAll(getDescriptors(ExpltbAttribute.getAttributes()));
     descriptors.addAll(getDescriptors(HistoaAttribute.getAttributes()));
     descriptors.addAll(getDescriptors(IndexedMtirpbAttribute.getAttributes()));
     descriptors.addAll(getDescriptors(IndexedPiaprdAttribute.getAttributes()));

@@ -23,6 +23,7 @@ public enum TreDescriptor {
   AIMIDB(AimidbAttribute.getAttributes()),
   CSEXRA(CsexraAttribute.getAttributes()),
   CSDIDA(CsdidaAttribute.getAttributes()),
+  EXPLTB(ExpltbAttribute.getAttributes()),
   HISTOA(HistoaAttribute.getAttributes()),
   MTIRPB(MtirpbAttribute.getAttributes()),
   PIAIMC(PiaimcAttribute.getAttributes()),

@@ -32,6 +32,7 @@ import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
 import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
 import org.codice.alliance.transformer.nitf.common.CsdidaAttribute;
 import org.codice.alliance.transformer.nitf.common.CsexraAttribute;
+import org.codice.alliance.transformer.nitf.common.ExpltbAttribute;
 import org.codice.alliance.transformer.nitf.common.HistoaAttribute;
 import org.codice.alliance.transformer.nitf.common.IndexedPiaprdAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
@@ -70,6 +71,7 @@ public class ImageMetacardTypeTest {
     descriptors.addAll(new ValidationAttributes().getAttributeDescriptors());
     descriptors.addAll(new IsrAttributes().getAttributeDescriptors());
     descriptors.addAll(new SecurityAttributes().getAttributeDescriptors());
+    descriptors.addAll(AbstractNitfMetacardType.getDescriptors(ExpltbAttribute.getAttributes()));
     descriptors.addAll(AbstractNitfMetacardType.getDescriptors(HistoaAttribute.getAttributes()));
     descriptors.addAll(AbstractNitfMetacardType.getDescriptors(PiaimcAttribute.getAttributes()));
     descriptors.addAll(AbstractNitfMetacardType.getDescriptors(CsdidaAttribute.getAttributes()));

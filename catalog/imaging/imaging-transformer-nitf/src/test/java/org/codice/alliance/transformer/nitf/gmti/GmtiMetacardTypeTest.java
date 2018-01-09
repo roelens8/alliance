@@ -32,6 +32,7 @@ import org.codice.alliance.transformer.nitf.common.AcftbAttribute;
 import org.codice.alliance.transformer.nitf.common.AimidbAttribute;
 import org.codice.alliance.transformer.nitf.common.CsdidaAttribute;
 import org.codice.alliance.transformer.nitf.common.CsexraAttribute;
+import org.codice.alliance.transformer.nitf.common.ExpltbAttribute;
 import org.codice.alliance.transformer.nitf.common.HistoaAttribute;
 import org.codice.alliance.transformer.nitf.common.IndexedPiaprdAttribute;
 import org.codice.alliance.transformer.nitf.common.NitfHeaderAttribute;
@@ -50,6 +51,7 @@ public class GmtiMetacardTypeTest {
         AbstractNitfMetacardType.getDescriptors(NitfHeaderAttribute.getAttributes());
     descriptors.addAll(AbstractNitfMetacardType.getDescriptors(AcftbAttribute.getAttributes()));
     descriptors.addAll(AbstractNitfMetacardType.getDescriptors(AimidbAttribute.getAttributes()));
+    descriptors.addAll(AbstractNitfMetacardType.getDescriptors(ExpltbAttribute.getAttributes()));
     descriptors.addAll(
         AbstractNitfMetacardType.getDescriptors(IndexedMtirpbAttribute.getAttributes()));
     descriptors.addAll(AbstractNitfMetacardType.getDescriptors(MtirpbAttribute.getAttributes()));

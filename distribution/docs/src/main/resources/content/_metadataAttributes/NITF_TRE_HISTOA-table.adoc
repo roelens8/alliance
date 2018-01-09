@@ -1,6 +1,6 @@
 :title: NITF Softcopy History (HISTOA) TRE Attribute Mappings
 :type: subAppendix
-:order: 011
+:order: 012
 :parent: Format-specific Attribute Mappings
 :status: published
 :summary: NITF Softcopy History (HISTOA) TRE Attribute Mappings.
