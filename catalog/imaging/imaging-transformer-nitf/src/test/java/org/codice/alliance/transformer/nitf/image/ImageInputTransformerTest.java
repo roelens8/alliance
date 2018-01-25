@@ -51,7 +51,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.codice.alliance.catalog.core.api.types.Isr;
+import org.codice.alliance.transformer.nitf.ExtNitfUtility;
 import org.codice.alliance.transformer.nitf.MetacardFactory;
 import org.codice.alliance.transformer.nitf.NitfAttributeConverters;
 import org.codice.alliance.transformer.nitf.NitfTestCommons;
@@ -139,7 +141,7 @@ public class ImageInputTransformerTest {
         wkt.matches(
             "^POLYGON \\(\\(85 32.98\\d*, 85.00\\d* 32.98\\d*, 85.00\\d* 32.98\\d*, 85 32.98\\d*, 85 32.98\\d*\\)\\)"));
 
-    Map<NitfAttribute, Object> map = initAttributesToBeAsserted();
+    Map<NitfAttribute, NitfValue> map = initAttributesToBeAsserted();
     assertAttributesMap(metacard, map);
 
     validateDates(
@@ -179,7 +181,7 @@ public class ImageInputTransformerTest {
     return IntStream.range(0, length).mapToObj(x -> "x").collect(Collectors.joining());
   }
 
-  private static Map<NitfAttribute, Object> createNitfWithAimidb(File file) {
+  private static Map<NitfAttribute, NitfValue> createNitfWithAimidb(File file) {
     String acquisitionDate = "20161013121212";
     String missionNumber = "UNKN";
     String country = "US";
@@ -213,11 +215,11 @@ public class ImageInputTransformerTest {
         .write(file.getAbsolutePath());
 
     // key value pair of nitf attributes and expected getAttributes
-    Map<NitfAttribute, Object> assertMap = new HashMap<>();
-    assertMap.put(AimidbAttribute.ACQUISITION_DATE_ATTRIBUTE, acquisitionDate);
-    assertMap.put(AimidbAttribute.MISSION_NUMBER_ATTRIBUTE, missionNumber);
-    assertMap.put(AimidbAttribute.COUNTRY_CODE_ATTRIBUTE, country);
-    assertMap.put(AimidbAttribute.LOCATION_ATTRIBUTE, location);
+    Map<NitfAttribute, NitfValue> assertMap = new HashMap<>();
+    assertMap.put(AimidbAttribute.ACQUISITION_DATE_ATTRIBUTE, new NitfValue(acquisitionDate));
+    assertMap.put(AimidbAttribute.MISSION_NUMBER_ATTRIBUTE, new NitfValue(missionNumber));
+    assertMap.put(AimidbAttribute.COUNTRY_CODE_ATTRIBUTE, new NitfValue(country));
+    assertMap.put(AimidbAttribute.LOCATION_ATTRIBUTE, new NitfValue(location));
     return assertMap;
   }
 
@@ -225,7 +227,7 @@ public class ImageInputTransformerTest {
   public void testAimidb() throws IOException, NitfFormatException {
     File nitfFile = File.createTempFile("nitf-", ".ntf");
     try {
-      Map<NitfAttribute, Object> treMap = createNitfWithAimidb(nitfFile);
+      Map<NitfAttribute, NitfValue> treMap = createNitfWithAimidb(nitfFile);
 
       try (InputStream inputStream = new FileInputStream(nitfFile)) {
         Metacard metacard = metacardFactory.createMetacard("aimidbTest");
@@ -240,7 +242,7 @@ public class ImageInputTransformerTest {
     }
   }
 
-  private static Map<NitfAttribute, Object> createNitfWithExpltb(File file) {
+  private static Map<NitfAttribute, NitfValue> createNitfWithExpltb(File file) {
     String angleToNorth = "150.001";
     String angleToNorthAccuracy = "03.001";
     String mode = "LBM";
@@ -271,12 +273,14 @@ public class ImageInputTransformerTest {
         .write(file.getAbsolutePath());
 
     // key value pair of nitf attributes and expected getAttributes
-    Map<NitfAttribute, Object> assertMap = new HashMap<>();
-    assertMap.put(ExpltbAttribute.ANGLE_TO_NORTH_ATTRIBUTE, Float.parseFloat(angleToNorth));
+    Map<NitfAttribute, NitfValue> assertMap = new HashMap<>();
     assertMap.put(
-        ExpltbAttribute.ANGLE_TO_NORTH_ACCURACY_ATTRIBUTE, Float.parseFloat(angleToNorthAccuracy));
-    assertMap.put(ExpltbAttribute.MODE_ATTRIBUTE, mode);
-    assertMap.put(ExpltbAttribute.PRIME_ID_ATTRIBUTE, primeId);
+        ExpltbAttribute.ANGLE_TO_NORTH_ATTRIBUTE, new NitfValue(Float.parseFloat(angleToNorth)));
+    assertMap.put(
+        ExpltbAttribute.ANGLE_TO_NORTH_ACCURACY_ATTRIBUTE,
+        new NitfValue(Float.parseFloat(angleToNorthAccuracy)));
+    assertMap.put(ExpltbAttribute.MODE_ATTRIBUTE, new NitfValue(mode));
+    assertMap.put(ExpltbAttribute.PRIME_ID_ATTRIBUTE, new NitfValue(primeId));
     return assertMap;
   }
 
@@ -284,7 +288,7 @@ public class ImageInputTransformerTest {
   public void testExpltb() throws IOException, NitfFormatException {
     File nitfFile = File.createTempFile("nitf-", ".ntf");
     try {
-      Map<NitfAttribute, Object> treMap = createNitfWithExpltb(nitfFile);
+      Map<NitfAttribute, NitfValue> treMap = createNitfWithExpltb(nitfFile);
 
       try (InputStream inputStream = new FileInputStream(nitfFile)) {
         Metacard metacard = metacardFactory.createMetacard("expltbTest");
@@ -299,7 +303,7 @@ public class ImageInputTransformerTest {
     }
   }
 
-  private static Map<NitfAttribute, Object> createNitfWithPiaprd(File file)
+  private static Map<NitfAttribute, NitfValue> createNitfWithPiaprd(File file)
       throws NitfFormatException {
     String accessId = "THIS IS AN IPA FILE.                                       -END-";
     String keyword =
@@ -387,9 +391,9 @@ public class ImageInputTransformerTest {
         .write(file.getAbsolutePath());
 
     // key value pair of nitf attributes and expected getAttributes
-    Map<NitfAttribute, Object> assertMap = new HashMap<>();
-    assertMap.put(PiaprdAttribute.ACCESS_ID_ATTRIBUTE, accessId);
-    assertMap.put(IndexedPiaprdAttribute.KEYWORD_ATTRIBUTE, keyword);
+    Map<NitfAttribute, NitfValue> assertMap = new HashMap<>();
+    assertMap.put(PiaprdAttribute.ACCESS_ID_ATTRIBUTE, new NitfValue(accessId));
+    assertMap.put(IndexedPiaprdAttribute.KEYWORD_ATTRIBUTE, new NitfValue(keyword));
     return assertMap;
   }
 
@@ -397,7 +401,7 @@ public class ImageInputTransformerTest {
   public void testPiaprd() throws IOException, NitfFormatException {
     File nitfFile = File.createTempFile("nitf-", ".ntf");
     try {
-      Map<NitfAttribute, Object> treMap = createNitfWithPiaprd(nitfFile);
+      Map<NitfAttribute, NitfValue> treMap = createNitfWithPiaprd(nitfFile);
 
       try (InputStream inputStream = new FileInputStream(nitfFile)) {
         Metacard metacard = metacardFactory.createMetacard("piaprdTest");
@@ -693,84 +697,91 @@ public class ImageInputTransformerTest {
   }
 
   /** expected attribute values for i_3001a.ntf */
-  private static Map<NitfAttribute, Object> initAttributesToBeAsserted() {
+  private static Map<NitfAttribute, NitfValue> initAttributesToBeAsserted() {
     // key value pair of attributes and expected getAttributes
-    Map<NitfAttribute, Object> map = new HashMap<>();
-    map.put(NitfHeaderAttribute.FILE_PROFILE_NAME_ATTRIBUTE, "NITF");
-    map.put(NitfHeaderAttribute.FILE_VERSION_ATTRIBUTE, "2.1");
-    map.put(NitfHeaderAttribute.COMPLEXITY_LEVEL_ATTRIBUTE, 3);
-    map.put(NitfHeaderAttribute.STANDARD_TYPE_ATTRIBUTE, "BF01");
-    map.put(NitfHeaderAttribute.ORIGINATING_STATION_ID_ATTRIBUTE, "i_3001a");
+    Map<NitfAttribute, NitfValue> map = new HashMap<>();
+    map.put(NitfHeaderAttribute.FILE_PROFILE_NAME_ATTRIBUTE, new NitfValue("NITF"));
+    map.put(NitfHeaderAttribute.FILE_VERSION_ATTRIBUTE, new NitfValue("2.1"));
+    map.put(NitfHeaderAttribute.COMPLEXITY_LEVEL_ATTRIBUTE, new NitfValue(3));
+    map.put(NitfHeaderAttribute.STANDARD_TYPE_ATTRIBUTE, new NitfValue("BF01"));
+    map.put(NitfHeaderAttribute.ORIGINATING_STATION_ID_ATTRIBUTE, new NitfValue("i_3001a"));
     map.put(
         NitfHeaderAttribute.FILE_TITLE_ATTRIBUTE,
-        "Checks an uncompressed 1024x1024 8 bit mono image with GEOcentric data. Airfield");
-    map.put(NitfHeaderAttribute.FILE_SECURITY_CLASSIFICATION_ATTRIBUTE, "UNCLASSIFIED");
+        new NitfValue(
+            "Checks an uncompressed 1024x1024 8 bit mono image with GEOcentric data. Airfield"));
+    map.put(
+        NitfHeaderAttribute.FILE_SECURITY_CLASSIFICATION_ATTRIBUTE, new NitfValue("UNCLASSIFIED"));
     map.put(
         NitfHeaderAttribute.FILE_CLASSIFICATION_SECURITY_SYSTEM_ATTRIBUTE,
-        TEST_CLASSIFICATION_SYSTEM);
-    map.put(NitfHeaderAttribute.FILE_CODE_WORDS_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_CONTROL_AND_HANDLING_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_DECLASSIFICATION_TYPE_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_DECLASSIFICATION_DATE_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_DECLASSIFICATION_EXEMPTION_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_DOWNGRADE_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_RELEASING_INSTRUCTIONS_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_DOWNGRADE_DATE_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_TEXT_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_AUTHORITY_TYPE_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_AUTHORITY_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_REASON_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_SECURITY_SOURCE_DATE_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_SECURITY_CONTROL_NUMBER_ATTRIBUTE, null);
-    map.put(NitfHeaderAttribute.FILE_COPY_NUMBER_ATTRIBUTE, "00000");
-    map.put(NitfHeaderAttribute.FILE_NUMBER_OF_COPIES_ATTRIBUTE, "00000");
-    map.put(NitfHeaderAttribute.FILE_BACKGROUND_COLOR_ATTRIBUTE, "[0xff,0xff,0xff]");
-    map.put(NitfHeaderAttribute.ORIGINATORS_NAME_ATTRIBUTE, "JITC Fort Huachuca, AZ");
-    map.put(NitfHeaderAttribute.ORIGINATORS_PHONE_NUMBER_ATTRIBUTE, "(520) 538-5458");
-    map.put(ImageAttribute.FILE_PART_TYPE_ATTRIBUTE, "IM");
-    map.put(ImageAttribute.IMAGE_IDENTIFIER_1_ATTRIBUTE, "Missing ID");
-    map.put(ImageAttribute.TARGET_IDENTIFIER_ATTRIBUTE, null);
+        new NitfValue(TEST_CLASSIFICATION_SYSTEM));
+    map.put(NitfHeaderAttribute.FILE_CODE_WORDS_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_CONTROL_AND_HANDLING_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_DECLASSIFICATION_TYPE_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_DECLASSIFICATION_DATE_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_DECLASSIFICATION_EXEMPTION_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_DOWNGRADE_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_RELEASING_INSTRUCTIONS_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_DOWNGRADE_DATE_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_TEXT_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_AUTHORITY_TYPE_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_AUTHORITY_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_CLASSIFICATION_REASON_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_SECURITY_SOURCE_DATE_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_SECURITY_CONTROL_NUMBER_ATTRIBUTE, new NitfValue(null));
+    map.put(NitfHeaderAttribute.FILE_COPY_NUMBER_ATTRIBUTE, new NitfValue("00000"));
+    map.put(NitfHeaderAttribute.FILE_BACKGROUND_COLOR_ATTRIBUTE, new NitfValue("[0xff,0xff,0xff]"));
+    map.put(
+        NitfHeaderAttribute.ORIGINATORS_NAME_ATTRIBUTE, new NitfValue("JITC Fort Huachuca, AZ"));
+    map.put(
+        NitfHeaderAttribute.ORIGINATORS_PHONE_NUMBER_ATTRIBUTE, new NitfValue("(520) 538-5458"));
+    map.put(ImageAttribute.FILE_PART_TYPE_ATTRIBUTE, new NitfValue("IM"));
+    map.put(ImageAttribute.IMAGE_IDENTIFIER_1_ATTRIBUTE, new NitfValue("Missing ID"));
+    map.put(ImageAttribute.TARGET_IDENTIFIER_ATTRIBUTE, new NitfValue(null));
     final String imageIdentifier2 = "- BASE IMAGE -";
-    map.put(ImageAttribute.MISSION_ID_ATTRIBUTE, imageIdentifier2);
-    map.put(ImageAttribute.IMAGE_IDENTIFIER_2_ATTRIBUTE, imageIdentifier2);
-    map.put(ImageAttribute.IMAGE_SECURITY_CLASSIFICATION_ATTRIBUTE, "UNCLASSIFIED");
-    map.put(ImageAttribute.IMAGE_CLASSIFICATION_SECURITY_SYSTEM_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_CODEWORDS_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_CONTROL_AND_HANDLING_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_RELEASING_INSTRUCTIONS_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_DECLASSIFICATION_TYPE_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_DECLASSIFICATION_DATE_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_DECLASSIFICATION_EXEMPTION_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_DOWNGRADE_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_DOWNGRADE_DATE_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_CLASSIFICATION_TEXT_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_CLASSIFICATION_AUTHORITY_TYPE_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_CLASSIFICATION_AUTHORITY_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_CLASSIFICATION_REASON_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_SECURITY_SOURCE_DATE_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_SECURITY_CONTROL_NUMBER_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_SOURCE_ATTRIBUTE, "Unknown");
-    map.put(ImageAttribute.NUMBER_OF_SIGNIFICANT_ROWS_IN_IMAGE_ATTRIBUTE, 1024L);
-    map.put(ImageAttribute.NUMBER_OF_SIGNIFICANT_COLUMNS_IN_IMAGE_ATTRIBUTE, 1024L);
-    map.put(ImageAttribute.PIXEL_VALUE_TYPE_ATTRIBUTE, "INTEGER");
-    map.put(ImageAttribute.IMAGE_REPRESENTATION_ATTRIBUTE, "MONOCHROME");
-    map.put(ImageAttribute.IMAGE_CATEGORY_ATTRIBUTE, "VISUAL");
-    map.put(ImageAttribute.ACTUAL_BITS_PER_PIXEL_PER_BAND_ATTRIBUTE, 8);
-    map.put(ImageAttribute.PIXEL_JUSTIFICATION_ATTRIBUTE, "RIGHT");
-    map.put(ImageAttribute.IMAGE_COORDINATE_REPRESENTATION_ATTRIBUTE, "GEOGRAPHIC");
-    map.put(ImageAttribute.NUMBER_OF_IMAGE_COMMENTS_ATTRIBUTE, 0);
-    map.put(ImageAttribute.IMAGE_COMMENT_1_ATTRIBUTE, null);
-    map.put(ImageAttribute.IMAGE_COMPRESSION_ATTRIBUTE, "NOTCOMPRESSED");
+    map.put(ImageAttribute.MISSION_ID_ATTRIBUTE, new NitfValue(imageIdentifier2));
+    map.put(ImageAttribute.IMAGE_IDENTIFIER_2_ATTRIBUTE, new NitfValue(imageIdentifier2));
+    map.put(ImageAttribute.IMAGE_SECURITY_CLASSIFICATION_ATTRIBUTE, new NitfValue("UNCLASSIFIED"));
+    map.put(ImageAttribute.IMAGE_CLASSIFICATION_SECURITY_SYSTEM_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_CODEWORDS_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_CONTROL_AND_HANDLING_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_RELEASING_INSTRUCTIONS_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_DECLASSIFICATION_TYPE_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_DECLASSIFICATION_DATE_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_DECLASSIFICATION_EXEMPTION_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_DOWNGRADE_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_DOWNGRADE_DATE_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_CLASSIFICATION_TEXT_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_CLASSIFICATION_AUTHORITY_TYPE_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_CLASSIFICATION_AUTHORITY_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_CLASSIFICATION_REASON_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_SECURITY_SOURCE_DATE_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_SECURITY_CONTROL_NUMBER_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_SOURCE_ATTRIBUTE, new NitfValue("Unknown"));
+    map.put(ImageAttribute.NUMBER_OF_SIGNIFICANT_ROWS_IN_IMAGE_ATTRIBUTE, new NitfValue(1024L));
+    map.put(ImageAttribute.NUMBER_OF_SIGNIFICANT_COLUMNS_IN_IMAGE_ATTRIBUTE, new NitfValue(1024L));
+    map.put(ImageAttribute.PIXEL_VALUE_TYPE_ATTRIBUTE, new NitfValue("INTEGER"));
+    map.put(ImageAttribute.IMAGE_REPRESENTATION_ATTRIBUTE, new NitfValue("MONOCHROME"));
+    map.put(ImageAttribute.IMAGE_CATEGORY_ATTRIBUTE, new NitfValue("VISUAL", "VIS"));
+    map.put(ImageAttribute.ACTUAL_BITS_PER_PIXEL_PER_BAND_ATTRIBUTE, new NitfValue(8));
+    map.put(ImageAttribute.PIXEL_JUSTIFICATION_ATTRIBUTE, new NitfValue("RIGHT"));
+    map.put(ImageAttribute.IMAGE_COORDINATE_REPRESENTATION_ATTRIBUTE, new NitfValue("GEOGRAPHIC"));
+    map.put(ImageAttribute.NUMBER_OF_IMAGE_COMMENTS_ATTRIBUTE, new NitfValue(0));
+    map.put(ImageAttribute.IMAGE_COMMENT_1_ATTRIBUTE, new NitfValue(null));
+    map.put(ImageAttribute.IMAGE_COMPRESSION_ATTRIBUTE, new NitfValue("NOTCOMPRESSED"));
     return map;
   }
 
-  private static void assertAttributesMap(Metacard metacard, Map<NitfAttribute, Object> map) {
-    for (Map.Entry<NitfAttribute, Object> entry : map.entrySet()) {
+  private static void assertAttributesMap(Metacard metacard, Map<NitfAttribute, NitfValue> map) {
+    for (Map.Entry<NitfAttribute, NitfValue> entry : map.entrySet()) {
       for (AttributeDescriptor attributeDescriptor :
           (Set<AttributeDescriptor>) entry.getKey().getAttributeDescriptors()) {
         Attribute attribute = metacard.getAttribute(attributeDescriptor.getName());
         if (attribute != null) {
-          assertThat(attribute.getValue(), is(entry.getValue()));
+          if (attribute.getName().contains(ExtNitfUtility.EXT_NITF_PREFIX)) {
+            assertThat(attribute.getValue(), is(entry.getValue().getExtValue()));
+          } else {
+            assertThat(attribute.getValue(), is(entry.getValue().getTaxonomyValue()));
+          }
         } else {
           assertThat(attribute, nullValue());
         }
@@ -834,6 +845,30 @@ public class ImageInputTransformerTest {
       final Attribute attribute = metacard.getAttribute(attributeDescriptor.getName());
 
       assertDateAttribute(reason, attribute, expectedDateTimes);
+    }
+  }
+
+  private static final class NitfValue {
+    private Object taxonomyValue;
+
+    private Object extValue;
+
+    public NitfValue(@Nullable Object value, @Nullable Object extValue) {
+      this.taxonomyValue = value;
+      this.extValue = extValue;
+    }
+
+    public NitfValue(@Nullable Object value) {
+      this.taxonomyValue = value;
+      this.extValue = value;
+    }
+
+    public Object getTaxonomyValue() {
+      return taxonomyValue;
+    }
+
+    public Object getExtValue() {
+      return extValue;
     }
   }
 }

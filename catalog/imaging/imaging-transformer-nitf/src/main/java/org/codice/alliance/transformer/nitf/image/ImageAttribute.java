@@ -204,6 +204,7 @@ public class ImageAttribute extends NitfAttributeImpl<ImageSegment> {
           Isr.CATEGORY,
           "ICAT",
           segment -> segment.getImageCategory().name(),
+          segment -> segment.getImageCategory().getTextEquivalent(),
           new IsrAttributes().getAttributeDescriptor(Isr.CATEGORY),
           IMAGE_CATEGORY);
 
@@ -487,6 +488,23 @@ public class ImageAttribute extends NitfAttributeImpl<ImageSegment> {
       AttributeDescriptor attributeDescriptor,
       String extNitfName) {
     super(longName, shortName, accessorFunction, attributeDescriptor, extNitfName);
+    ATTRIBUTES.add(this);
+  }
+
+  private ImageAttribute(
+      final String longName,
+      final String shortName,
+      final Function<ImageSegment, Serializable> accessorFunction,
+      final Function<ImageSegment, Serializable> extAccessorFunction,
+      AttributeDescriptor attributeDescriptor,
+      String extNitfName) {
+    super(
+        longName,
+        shortName,
+        accessorFunction,
+        extAccessorFunction,
+        attributeDescriptor,
+        extNitfName);
     ATTRIBUTES.add(this);
   }
 

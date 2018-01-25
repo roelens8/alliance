@@ -88,9 +88,12 @@ public class SegmentHandler {
       if (!ExtNitfUtility.isExtAttribute(attribute)) {
         handleBadAttribute(metacard, attribute, e.getOriginalValue());
       }
-
       return;
     }
+
+    Function<T, Serializable> extAccessor =
+        ((NitfAttributeImpl) attribute).getExtAccessorFunction();
+    Serializable extValue = extAccessor.apply(segment);
 
     Set<AttributeDescriptor> descriptors = attribute.getAttributeDescriptors();
 
@@ -102,18 +105,25 @@ public class SegmentHandler {
     }
 
     for (AttributeDescriptor descriptor : descriptors) {
-      if (descriptor.getType().equals(BasicTypes.STRING_TYPE)
-          && value != null
-          && value.toString().length() == 0) {
-        value = null;
+      if (descriptor.getType().equals(BasicTypes.STRING_TYPE)) {
+        if (value != null && value.toString().length() == 0) {
+          value = null;
+        }
+        if (extValue != null && extValue.toString().length() == 0) {
+          extValue = null;
+        }
       }
     }
 
     for (AttributeDescriptor descriptor : descriptors) {
-      if (value != null) {
-        Attribute catalogAttribute = populateAttribute(metacard, descriptor.getName(), value);
-        LOGGER.trace("Setting the metacard attribute [{}, {}]", descriptor.getName(), value);
-        metacard.setAttribute(catalogAttribute);
+      if (descriptor.getName().contains(ExtNitfUtility.EXT_NITF_PREFIX)) {
+        if (extValue != null) {
+          setMetacardAttribute(metacard, descriptor.getName(), extValue);
+        }
+      } else {
+        if (value != null) {
+          setMetacardAttribute(metacard, descriptor.getName(), value);
+        }
       }
     }
   }
@@ -123,8 +133,7 @@ public class SegmentHandler {
     Set<AttributeDescriptor> attributeDescriptors = attribute.getAttributeDescriptors();
 
     for (AttributeDescriptor descriptor : attributeDescriptors) {
-      Attribute catalogAttribute = populateAttribute(metacard, descriptor.getName(), originalValue);
-      metacard.setAttribute(catalogAttribute);
+      setMetacardAttribute(metacard, descriptor.getName(), originalValue);
     }
 
     attachValidationWarning(metacard, attribute);
@@ -141,12 +150,10 @@ public class SegmentHandler {
             "Error while processing NITF attribute %s (%s). This NITF attribute was set to its original value and needs to be fixed manually.",
             attribute.getLongName(), attribute.getShortName());
 
-    Attribute validationAttribute =
-        populateAttribute(metacard, Validation.VALIDATION_WARNINGS, warningMessage);
-    metacard.setAttribute(validationAttribute);
+    setMetacardAttribute(metacard, Validation.VALIDATION_WARNINGS, warningMessage);
   }
 
-  private Attribute populateAttribute(Metacard metacard, String attributeName, Serializable value) {
+  private void setMetacardAttribute(Metacard metacard, String attributeName, Serializable value) {
     Attribute currentAttribute = metacard.getAttribute(attributeName);
 
     if (currentAttribute == null) {
@@ -156,7 +163,7 @@ public class SegmentHandler {
       newAttribute.addValue(value);
       currentAttribute = newAttribute;
     }
-
-    return currentAttribute;
+    LOGGER.trace("Setting the metacard attribute [{}, {}]", attributeName, value);
+    metacard.setAttribute(currentAttribute);
   }
 }

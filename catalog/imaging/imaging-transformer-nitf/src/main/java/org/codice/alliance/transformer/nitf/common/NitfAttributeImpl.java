@@ -34,6 +34,8 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
 
   private final Function<T, Serializable> accessorFunction;
 
+  private final Function<T, Serializable> extAccessorFunction;
+
   private Set<AttributeDescriptor> attributeDescriptors;
 
   private List<NitfAttribute<TreGroup>> indexedAttributes;
@@ -46,6 +48,7 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
     this.shortName = shortName;
     this.longName = extNitfName;
     this.accessorFunction = accessorFunction;
+    this.extAccessorFunction = accessorFunction;
     // retrieving metacard attribute descriptor for this attribute to prevent later lookups
     this.attributeDescriptors =
         Collections.singleton(
@@ -64,9 +67,26 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
       final Function<T, Serializable> accessorFunction,
       AttributeDescriptor attributeDescriptor,
       String extNitfName) {
+    this(
+        attributeName,
+        shortName,
+        accessorFunction,
+        accessorFunction,
+        attributeDescriptor,
+        extNitfName);
+  }
+
+  protected NitfAttributeImpl(
+      final String attributeName,
+      final String shortName,
+      final Function<T, Serializable> accessorFunction,
+      final Function<T, Serializable> extAccessorFunction,
+      AttributeDescriptor attributeDescriptor,
+      String extNitfName) {
     this.shortName = shortName;
     this.longName = attributeName;
     this.accessorFunction = accessorFunction;
+    this.extAccessorFunction = extAccessorFunction;
     this.attributeDescriptors = new HashSet<>();
     this.attributeDescriptors.add(attributeDescriptor);
     if (StringUtils.isNotEmpty(extNitfName)) {
@@ -93,6 +113,24 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
       String extNitfName,
       List<NitfAttribute<TreGroup>> indexedAttributes) {
     this(attributeName, shortName, accessorFunction, attributeDescriptor, extNitfName);
+    this.indexedAttributes = indexedAttributes;
+  }
+
+  protected NitfAttributeImpl(
+      final String attributeName,
+      final String shortName,
+      final Function<T, Serializable> accessorFunction,
+      final Function<T, Serializable> extAccessorFunction,
+      AttributeDescriptor attributeDescriptor,
+      String extNitfName,
+      List<NitfAttribute<TreGroup>> indexedAttributes) {
+    this(
+        attributeName,
+        shortName,
+        accessorFunction,
+        extAccessorFunction,
+        attributeDescriptor,
+        extNitfName);
     this.indexedAttributes = indexedAttributes;
   }
 
@@ -123,5 +161,9 @@ public class NitfAttributeImpl<T> implements NitfAttribute<T> {
 
   public List<NitfAttribute<TreGroup>> getIndexedAttributes() {
     return indexedAttributes;
+  }
+
+  public Function<T, Serializable> getExtAccessorFunction() {
+    return extAccessorFunction;
   }
 }
